@@ -79,7 +79,6 @@ model_quality.fit(X1_train, y1_train)
 
 y1_pred = model_quality.predict(X1_test)
 acc1 = accuracy_score(y1_test, y1_pred)
-st.info(f"🔹 Sleep Quality Model Accuracy: {acc1*100:.2f}%")
 
 # ----------------------------
 # MODEL 2: Recommendation Prediction
@@ -101,7 +100,6 @@ model_rec.fit(X2_train, y2_train)
 
 y2_pred = model_rec.predict(X2_test)
 acc2 = accuracy_score(y2_test, y2_pred)
-st.info(f"🔹 Recommendation Model Accuracy: {acc2*100:.2f}%")
 
 # ----------------------------
 # USER INPUT
