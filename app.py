@@ -11,6 +11,33 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 import datetime
 
+def set_video_bg(video_file):
+    st.markdown(
+        f"""
+        <style>
+        .stApp {{
+            overflow: hidden;
+        }}
+        .video-bg {{
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            object-fit: cover;
+        }}
+        </style>
+        <video autoplay muted loop class="video-bg">
+            <source src="{video_file}" type="video/mp4">
+        </video>
+        """,
+        unsafe_allow_html=True
+    )
+
+# Call the function
+set_video_bg("background.mp4")
+
 # ----------------------------
 # PAGE CONFIG
 # ----------------------------
