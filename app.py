@@ -1,20 +1,17 @@
-# =============================================
-# 🌙 AI-Based Sleep Quality & Recommendation Analyzer
-# (AI Model: Random Forest Classifier)
-# =============================================
-
 import streamlit as st
 import pandas as pd
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
 import datetime
-import base64
 
 # ----------------------------
 # BACKGROUND IMAGE
 # ----------------------------
+import base64
+
 def set_background(local_img_path):
     with open(local_img_path, "rb") as image_file:
         encoded_string = base64.b64encode(image_file.read()).decode()
@@ -26,7 +23,7 @@ def set_background(local_img_path):
     background-attachment: fixed;
     }}
     .stApp {{
-        background: rgba(255, 255, 255, 0.85);
+        background: rgba(255, 255, 255, 0.85);  /* semi-transparent overlay */
         padding: 2rem;
         border-radius: 1rem;
     }}
@@ -34,8 +31,7 @@ def set_background(local_img_path):
     """
     st.markdown(page_bg_img, unsafe_allow_html=True)
 
-# Set your background image path
-set_background("bg.jpg")
+set_background("bg.jpg") 
 
 # ----------------------------
 # PAGE CONFIG
@@ -45,60 +41,98 @@ st.title("🌙 GOODNIGHT (AI-Based Sleep Quality & Recommendation Analyzer)")
 st.markdown("Analyze your sleep and get AI-generated personalized recommendations!")
 
 # ----------------------------
-# GENERATE SAMPLE DATA FOR TRAINING
+# SIMULATED DATASET (500 users)
 # ----------------------------
 np.random.seed(42)
-data_size = 500
+N = 500
+data = {
+    'Age': np.random.randint(18, 65, N),
+    'Meditation': np.random.choice(['Yes','No'], N),
+    'Consistency': np.random.choice(['Yes','No'], N),
+    'SleepDuration': np.round(np.random.uniform(4,10,N),1),
+    'StressLevel': np.random.randint(0,11,N),
+    'Disorder': np.random.choice(['None','Insomnia','Mild'], N)
+}
 
-df = pd.DataFrame({
-    "Age": np.random.randint(18, 60, data_size),
-    "SleepDuration": np.random.uniform(4, 10, data_size),
-    "Consistency": np.random.choice(["Yes","No"], data_size),
-    "Stress": np.random.randint(0,11,data_size),
-    "Meditation": np.random.choice(["Yes","No"], data_size),
-})
+df = pd.DataFrame(data)
 
-# Generate Sleep Quality based on weighted logic (for training)
+# ----------------------------
+# GENERATE SLEEP QUALITY
+# ----------------------------
 def generate_quality(row):
     score = 0
-    # Sleep Duration
-    if row.SleepDuration < 5:
-        score += 0
-    elif row.SleepDuration < 7:
-        score += (row.SleepDuration-5)/2*40
-    elif row.SleepDuration <= 9:
-        score += 40
-    else:
-        score += max(0, 40 - (row.SleepDuration-9)*10)
-    # Consistency
-    score += 30 if row.Consistency=="Yes" else 0
-    # Stress
-    score += max(0, 20 - row.Stress*2)
-    # Meditation
-    score += 10 if row.Meditation=="Yes" else 0
-    
-    if score < 50:
-        return "Poor"
-    elif score < 75:
-        return "Average"
-    else:
-        return "Excellent"
+    score += 1 if row['Meditation']=='Yes' else 0
+    score += 1 if row['Consistency']=='Yes' else 0
+    score += 1 if 7<=row['SleepDuration']<=9 else 0
+    score += 1 if row['StressLevel']<=5 else 0
+    score -= 1 if row['Disorder']!='None' else 0
+    if score<=1: return 'Poor'
+    elif score==2: return 'Average'
+    else: return 'Excellent'
 
-df["SleepQuality"] = df.apply(generate_quality, axis=1)
+df['SleepQuality'] = df.apply(generate_quality, axis=1)
 
-# Encode categorical variables
-le_consistency = LabelEncoder()
+# ----------------------------
+# GENERATE RECOMMENDATION CATEGORY
+# ----------------------------
+recommendations = ['Reduce caffeine','Meditate more','Exercise regularly',
+                   'Maintain consistent sleep','Manage stress','Keep routine','Hydrate & relax']
+df['Recommendation'] = df.apply(lambda x: ', '.join(np.random.choice(recommendations, np.random.randint(1,4), replace=False)), axis=1)
+
+# ----------------------------
+# ENCODE CATEGORICAL FEATURES
+# ----------------------------
 le_meditation = LabelEncoder()
-df["Consistency_enc"] = le_consistency.fit_transform(df["Consistency"])
-df["Meditation_enc"] = le_meditation.fit_transform(df["Meditation"])
+le_consistency = LabelEncoder()
+le_disorder = LabelEncoder()
+le_quality = LabelEncoder()
 
-# Features and target
-X = df[["Age","SleepDuration","Consistency_enc","Stress","Meditation_enc"]]
-y = df["SleepQuality"]
+df['Meditation'] = le_meditation.fit_transform(df['Meditation'])
+df['Consistency'] = le_consistency.fit_transform(df['Consistency'])
+df['Disorder'] = le_disorder.fit_transform(df['Disorder'])
+df['SleepQualityEnc'] = le_quality.fit_transform(df['SleepQuality'])
 
-# Train model
-rf_model = RandomForestClassifier(n_estimators=200, random_state=42)
-rf_model.fit(X, y)
+# ----------------------------
+# MODEL 1: Sleep Quality Prediction
+# ----------------------------
+X1 = df[['Age','Meditation','Consistency','SleepDuration','StressLevel','Disorder']]
+y1 = df['SleepQualityEnc']
+
+X1_train, X1_test, y1_train, y1_test = train_test_split(X1, y1, test_size=0.2, random_state=42)
+model_quality = RandomForestClassifier(n_estimators=200, random_state=42)
+model_quality.fit(X1_train, y1_train)
+
+# ----------------------------
+# MODEL 2: Recommendation Prediction
+# ----------------------------
+rec_categories = ['Caffeine','Meditation','Exercise','Routine','Stress']
+df['RecCategory'] = np.random.choice(rec_categories, N)
+le_rec = LabelEncoder()
+df['RecCategoryEnc'] = le_rec.fit_transform(df['RecCategory'])
+
+X2 = X1.copy()
+y2 = df['RecCategoryEnc']
+
+X2_train, X2_test, y2_train, y2_test = train_test_split(X2, y2, test_size=0.2, random_state=42)
+model_rec = RandomForestClassifier(n_estimators=200, random_state=42)
+model_rec.fit(X2_train, y2_train)
+
+# ----------------------------
+# FUNCTION TO CHECK SUFFICIENT SLEEP
+# ----------------------------
+def sleep_enough_by_age(age, duration):
+    if 6 <= age <= 12:
+        return 9 <= duration <= 11, "9-11 hours"
+    elif 13 <= age <= 19:
+        return 8 <= duration <= 10, "8-10 hours"
+    elif 20 <= age <= 35:
+        return 7 <= duration <= 9, "7-9 hours"
+    elif 36 <= age <= 50:
+        return 7 <= duration <= 9, "7-9 hours"
+    elif 51 <= age <= 70:
+        return 7 <= duration <= 8, "7-8 hours"
+    else:
+        return 7 <= duration <= 8, "7-8 hours"
 
 # ----------------------------
 # USER INPUT
@@ -109,6 +143,7 @@ consistency = st.selectbox("Do you maintain a consistent sleep schedule?", ["Yes
 stress = st.slider("Stress Level (0-10)", 0, 10, 5)
 bedtime = st.time_input("Bedtime", datetime.time(23,0))
 wakeuptime = st.time_input("Wakeup Time", datetime.time(7,0))
+disorder_input = st.selectbox("Any disorder symptoms?", ["None","Insomnia","Mild"])
 
 # Calculate sleep duration
 bt = datetime.datetime.combine(datetime.date.today(), bedtime)
@@ -118,51 +153,65 @@ if wt < bt:
 sleep_duration = round((wt - bt).total_seconds()/3600,2)
 st.info(f"🕒 Estimated Sleep Duration: **{sleep_duration} hours**")
 
+# Check sleep sufficiency
+enough, ideal_hours = sleep_enough_by_age(age, sleep_duration)
+min_hours = int(ideal_hours.split('-')[0])
+max_hours = int(ideal_hours.split('-')[1].split()[0])
+
+# Encode user input
+med_val = le_meditation.transform([meditation])[0]
+con_val = le_consistency.transform([consistency])[0]
+dis_val = le_disorder.transform([disorder_input])[0]
+
+input_features = np.array([[age, med_val, con_val, sleep_duration, stress, dis_val]])
+
 # ----------------------------
-# PREDICTION BUTTON
+# PREDICTION
 # ----------------------------
 if st.button("✨ Analyze My Sleep"):
-    # Encode user input
-    consistency_enc = le_consistency.transform([consistency])[0]
-    meditation_enc = le_meditation.transform([meditation])[0]
-
-    user_features = np.array([[age, sleep_duration, consistency_enc, stress, meditation_enc]])
-    
     # Predict sleep quality
-    predicted_quality = rf_model.predict(user_features)[0]
-    
-    # Predict probability (0-100 AI Sleep Score)
-    prob = rf_model.predict_proba(user_features)[0]
-    class_idx = list(rf_model.classes_).index(predicted_quality)
-    sleep_score = round(prob[class_idx]*100,1)
+    pred_quality = model_quality.predict(input_features)
+    quality = le_quality.inverse_transform(pred_quality)[0]
+
+    # Adjust quality based on sleep duration
+    if sleep_duration < min_hours:
+        quality = "Poor" if sleep_duration < min_hours-1 else "Average"
+    elif sleep_duration > max_hours:
+        quality = "Average"
 
     st.markdown("---")
-    st.success(f"🌙 Predicted Sleep Quality: **{predicted_quality}**")
+    st.success(f"🌙 Predicted Sleep Quality: **{quality.upper()}**")
+    st.info(f"🩺 Disorder: {disorder_input}")
     st.info(f"🛏 Sleep Duration: {sleep_duration} hours")
-    st.info(f"🌓 AI Sleep Score: **{sleep_score}/100**")
 
-    # ----------------------------
-    # AI Recommendations
-    # ----------------------------
+    # AI-based recommendations
     rec_list = []
 
-    # Sleep Duration priority
-    if sleep_duration < 7:
-        rec_list.append("Increase sleep duration to at least 7 hours")
-    elif sleep_duration > 9:
-        rec_list.append("Avoid oversleeping; maintain 7-9 hours of sleep")
-
-    # Consistency
-    if consistency=="No":
-        rec_list.append("Maintain a consistent sleep schedule")
-
-    # Stress
-    if stress > 5:
-        rec_list.append("Practice stress management techniques (meditation, deep breathing)")
-
-    # Meditation
     if meditation=="No":
         rec_list.append("Start meditating 10-25 mins daily")
+    if consistency=="No":
+        rec_list.append("Maintain a consistent sleep schedule")
+    if stress>5:
+        rec_list.append("Practice stress management techniques")
+    if sleep_duration < min_hours:
+        rec_list.append(f"Increase sleep to at least {ideal_hours}")
+    elif sleep_duration > max_hours:
+        rec_list.append(f"Do not oversleep; maintain {ideal_hours}")
+
+    # Predict recommendation category
+    pred_rec = model_rec.predict(input_features)
+    rec_category = le_rec.inverse_transform(pred_rec)[0]
+
+    # Map category to actual advice
+    rec_map = {
+        'Caffeine': ['Reduce caffeine intake', 'Avoid late coffee/tea', 'Drink herbal tea'],
+        'Meditation': ['Meditate 10-25 mins daily', 'Practice mindfulness', 'Relaxation exercises'],
+        'Exercise': ['Light exercise daily', 'Stretching before bed', 'Yoga for sleep'],
+        'Routine': ['Maintain consistent sleep schedule', 'Limit late-night screen use'],
+        'Stress': ['Manage stress through meditation', 'Avoid heavy workload before bed', 'Deep breathing exercises']
+    }
+
+    rec_list.extend(rec_map[rec_category])
 
     st.markdown("### 💡 AI-Generated Recommendations:")
     for advice in rec_list:
