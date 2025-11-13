@@ -58,20 +58,9 @@ st.title("🌙 AI-Based Sleep Quality & Disorder Analyzer")
 st.markdown("#### Your Smart AI Sleep Coach — Analyze, Improve & Rise Refreshed! 🧠💤")
 
 # ----------------------------
-# EMBEDDED DATASET
+# LOAD DATA
 # ----------------------------
-data = {
-    'Age': [20,22,25,30,28,21,24,26,29,31],
-    'Bedtime': ['23:00','00:00','22:30','01:00','23:30','00:30','22:45','01:15','23:15','00:00'],
-    'WakeupTime': ['07:00','06:30','06:30','07:00','07:30','07:30','06:15','07:15','07:45','06:30'],
-    'Meditation': ['Yes','No','Yes','No','Yes','No','Yes','No','Yes','No'],
-    'Consistency': ['Yes','No','Yes','No','Yes','Yes','Yes','No','Yes','No'],
-    'SleepDuration': [8.0,6.5,8.0,6.0,8.0,7.0,7.5,6.0,8.5,6.5],
-    'SleepQuality': ['Excellent','Poor','Excellent','Poor','Excellent','Average','Excellent','Poor','Excellent','Poor'],
-    'SleepingDisorder': ['None','Insomnia','None','Insomnia','None','None','None','Insomnia','None','Insomnia']
-}
-
-df = pd.DataFrame(data)
+df = pd.read_csv("sleep_dataset.csv")  # Use your CSV file here
 
 # ----------------------------
 # ENCODING & MODEL TRAINING
@@ -106,7 +95,7 @@ bedtime = st.time_input("Bedtime", datetime.time(23,0))
 wakeuptime = st.time_input("Wakeup Time", datetime.time(7,0))
 meditation = st.selectbox("Do you meditate daily?", ["Yes","No"])
 consistency = st.checkbox("I maintain a consistent sleep schedule", value=False)
-disorder_input = st.selectbox("Do you feel any disorder symptoms?", ["None","Insomnia","Mild Sleep Disorder"])
+disorder_input = st.selectbox("Do you feel any disorder symptoms?", ["None","Insomnia","Mild Sleep Disorder", "Sleep Apnea"])
 
 # Calculate sleep duration
 bt = datetime.datetime.combine(datetime.date.today(), bedtime)
@@ -143,19 +132,25 @@ if st.button("✨ Analyze My Sleep"):
 
     # Age-based ideal duration
     if 6 <= age <= 12:
-        ideal = "9–11 hours"
+        ideal = 9
     elif 13 <= age <= 19:
-        ideal = "8–10 hours"
+        ideal = 9
     elif 20 <= age <= 35:
-        ideal = "7–9 hours"
+        ideal = 8
     elif 36 <= age <= 50:
-        ideal = "7–9 hours"
+        ideal = 8
     elif 51 <= age <= 70:
-        ideal = "7–8 hours"
+        ideal = 7.5
     else:
-        ideal = "7–8 hours"
+        ideal = 7
 
-    st.write(f"🕑 **Recommended Sleep Duration:** {ideal}")
+    st.write(f"🕑 **Recommended Sleep Duration for your age:** {ideal} hours")
+
+    # Check if actual sleep is enough
+    if sleep_duration < ideal:
+        st.warning(f"⚠️ You are sleeping **{sleep_duration} hours**, which is below the recommended amount for your age.")
+    else:
+        st.success(f"✅ Your sleep duration is sufficient for your age.")
 
     # Sleep quality-based feedback
     st.markdown("---")
@@ -189,4 +184,4 @@ if st.button("✨ Analyze My Sleep"):
         🔹 Stay hydrated and stress-free  
         🔹 Continue mindfulness & balance  
         </div>
-        """,unsafe_allow_html=True)
+        """,unsafe_allow_html=True) 
