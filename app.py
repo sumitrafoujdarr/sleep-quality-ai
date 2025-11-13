@@ -14,20 +14,32 @@ import datetime
 # ----------------------------
 # BACKGROUND IMAGE
 # ----------------------------
-page_bg_img = """
-<style>
-body {
-background-image: url("https://images.unsplash.com/photo-1506744038136-46273834b3fb");
-background-size: cover;
-background-attachment: fixed;
-}
-.stApp {
-background: rgba(255, 255, 255, 0.85);  /* optional overlay for readability */
-}
-</style>
-"""
-st.markdown(page_bg_img, unsafe_allow_html=True)
+import base64
 
+# ----------------------------
+# LOCAL BACKGROUND IMAGE
+# ----------------------------
+def set_bg_local(image_file):
+    with open(image_file, "rb") as f:
+        encoded = base64.b64encode(f.read()).decode()
+    st.markdown(
+        f"""
+        <style>
+        body {{
+        background-image: url("data:image/jpg;base64,{encoded}");
+        background-size: cover;
+        background-attachment: fixed;
+        }}
+        .stApp {{
+        background: rgba(255, 255, 255, 0.85);  /* optional overlay for readability */
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+# Set your local image
+set_bg_local("bg.jpg")
 # ----------------------------
 # PAGE CONFIG
 # ----------------------------
