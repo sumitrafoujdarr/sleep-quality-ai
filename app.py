@@ -14,19 +14,29 @@ import datetime
 # ----------------------------
 # BACKGROUND IMAGE
 # ----------------------------
-page_bg_img = """
-<style>
-body {
-background-image: url("https://images.unsplash.com/photo-1506744038136-46273834b3fb");
-background-size: cover;
-background-attachment: fixed;
-}
-.stApp {
-background: rgba(255, 255, 255, 0.85);  /* optional overlay for readability */
-}
-</style>
-"""
-st.markdown(page_bg_img, unsafe_allow_html=True)
+import base64
+
+def set_background(local_img_path):
+    with open(local_img_path, "rb") as image_file:
+        encoded_string = base64.b64encode(image_file.read()).decode()
+    page_bg_img = f"""
+    <style>
+    body {{
+    background-image: url("data:image/png;base64,{encoded_string}");
+    background-size: cover;
+    background-attachment: fixed;
+    }}
+    .stApp {{
+        background: rgba(255, 255, 255, 0.85);  /* semi-transparent overlay */
+        padding: 2rem;
+        border-radius: 1rem;
+    }}
+    </style>
+    """
+    st.markdown(page_bg_img, unsafe_allow_html=True)
+
+# Call the function with your downloaded image path
+set_background("bg.jpg") 
 
 # ----------------------------
 # PAGE CONFIG
