@@ -41,7 +41,8 @@ set_background("bg.jpg")
 # PAGE CONFIG
 # ----------------------------
 st.set_page_config(page_title="AI Sleep Analyzer", page_icon="🌙", layout="centered")
-st.title("🌙 GoodNight (AI-Based Sleep Quality & Recommendation Analyzer)")
+st.title("🌙 GoodNight 
+(AI-Based Sleep Quality & Recommendation Analyzer)")
 st.markdown("Analyze your sleep and get AI-generated personalized recommendations!")
 
 # ----------------------------
