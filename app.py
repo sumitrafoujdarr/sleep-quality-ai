@@ -3,11 +3,7 @@
 # =============================================
 
 import streamlit as st
-import pandas as pd
 import numpy as np
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.preprocessing import LabelEncoder
-from sklearn.model_selection import train_test_split
 import datetime
 import base64
 
@@ -43,72 +39,32 @@ st.title("🌙 GOODNIGHT (AI-Based Sleep Quality & Recommendation Analyzer)")
 st.markdown("Analyze your sleep and get AI-generated personalized recommendations!")
 
 # ----------------------------
-# SIMULATED DATASET (500 users)
-# ----------------------------
-np.random.seed(42)
-N = 500
-data = {
-    'Age': np.random.randint(18, 65, N),
-    'Meditation': np.random.choice(['Yes','No'], N),
-    'Consistency': np.random.choice(['Yes','No'], N),
-    'SleepDuration': np.round(np.random.uniform(4,10,N),1),
-    'StressLevel': np.random.randint(0,11,N)
-}
-
-df = pd.DataFrame(data)
-
-# ----------------------------
 # FUNCTION TO CALCULATE SLEEP SCORE
 # ----------------------------
-def sleep_score(meditation, consistency, stress, sleep_duration, ideal_min=7, ideal_max=9):
+def sleep_score(meditation, consistency, stress, sleep_duration):
     score = 0
     score += 25 if meditation=="Yes" else 0
     score += 25 if consistency=="Yes" else 0
-    score += max(0, 25 - stress*2)  # lower stress, higher score
-    # Sleep duration contribution with sharper penalties
-    if sleep_duration < ideal_min:
-        score += max(0, (sleep_duration/ideal_min)*25)
-    elif sleep_duration > ideal_max:
-        score += max(0, (ideal_max/sleep_duration)*25)
+    score += max(0, 25 - stress*2)  # Lower stress = higher score
+    # Sleep duration contribution
+    if sleep_duration < 7:
+        score += max(0, (sleep_duration/7)*25)
+    elif sleep_duration > 9:
+        score += max(0, (9/sleep_duration)*25)
     else:
         score += 25
     return round(score,1)
 
-# Generate SleepScore
-df['SleepScore'] = df.apply(lambda row: sleep_score(row['Meditation'], row['Consistency'], row['StressLevel'], row['SleepDuration']), axis=1)
-
-# Map SleepScore to SleepQuality
-def score_to_quality(score):
-    if score < 50:
+def score_to_quality(score, sleep_duration, stress):
+    # Rule-based constraints
+    if sleep_duration < 5 or stress >= 9:
+        return "Poor"
+    elif score < 50:
         return "Poor"
     elif score < 75:
         return "Average"
     else:
         return "Excellent"
-
-df['SleepQuality'] = df['SleepScore'].apply(score_to_quality)
-
-# ----------------------------
-# ENCODE CATEGORICAL FEATURES
-# ----------------------------
-le_meditation = LabelEncoder()
-le_consistency = LabelEncoder()
-le_quality = LabelEncoder()
-
-df['MeditationEnc'] = le_meditation.fit_transform(df['Meditation'])
-df['ConsistencyEnc'] = le_consistency.fit_transform(df['Consistency'])
-df['SleepQualityEnc'] = le_quality.fit_transform(df['SleepQuality'])
-
-# ----------------------------
-# MODEL: Predict Sleep Quality
-# ----------------------------
-features = ['MeditationEnc','ConsistencyEnc','StressLevel','SleepDuration']
-X = df[features]
-y = df['SleepQualityEnc']
-
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-model_quality = RandomForestClassifier(n_estimators=200, random_state=42)
-model_quality.fit(X_train, y_train)
 
 # ----------------------------
 # USER INPUT
@@ -133,21 +89,16 @@ st.info(f"🕒 Estimated Sleep Duration: **{sleep_duration} hours**")
 # ----------------------------
 if st.button("✨ Analyze My Sleep"):
 
-    # Encode inputs
-    med_val = le_meditation.transform([meditation])[0]
-    con_val = le_consistency.transform([consistency])[0]
+    # Calculate AI Sleep Score
+    score = sleep_score(meditation, consistency, stress, sleep_duration)
 
-    input_features = np.array([[med_val, con_val, stress, sleep_duration]])
-    pred_quality = model_quality.predict(input_features)
-    pred_quality_label = le_quality.inverse_transform(pred_quality)[0]
-
-    # Calculate sleep score
-    pred_score = sleep_score(meditation, consistency, stress, sleep_duration)
+    # Determine Sleep Quality
+    quality = score_to_quality(score, sleep_duration, stress)
 
     st.markdown("---")
-    st.success(f"🌙 Predicted Sleep Quality: **{pred_quality_label}**")
+    st.success(f"🌙 Predicted Sleep Quality: **{quality}**")
     st.info(f"🛏 Sleep Duration: {sleep_duration} hours")
-    st.info(f"🌓 AI Sleep Score: **{pred_score}/100**")
+    st.info(f"🌓 AI Sleep Score: **{score}/100**")
 
     # AI-based recommendations
     rec_list = []
