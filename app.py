@@ -110,7 +110,7 @@ model.fit(X_train, y_train)
 # Evaluate model accuracy
 pred = model.predict(X_test)
 acc = accuracy_score(y_test, pred)
-st.markdown(f"📊 **Model Accuracy:** {acc*100:.2f}%")
+
 
 # ----------------------------
 # USER INPUT
