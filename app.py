@@ -61,12 +61,28 @@ st.markdown("#### Your Smart AI Sleep Coach — Analyze, Improve & Rise Refreshe
 # EMBEDDED DATASET (EXAMPLE)
 # ----------------------------
 data = {
-    'Age': [20,22,25,30,28,21,24,26,29,31],
-    'Meditation': ['Yes','No','Yes','No','Yes','No','Yes','No','Yes','No'],
-    'Consistency': ['Yes','No','Yes','No','Yes','Yes','Yes','No','Yes','No'],
-    'SleepDuration': [8.0,6.5,8.0,6.0,8.0,7.0,7.5,6.0,8.5,6.5],
-    'SleepQuality': ['Excellent','Poor','Excellent','Poor','Excellent','Average','Excellent','Poor','Excellent','Poor'],
-    'SleepingDisorder': ['None','Insomnia','None','Insomnia','None','None','None','Insomnia','None','Insomnia']
+    data_100 = {
+    'Age': [20,22,25,30,28,21,24,26,29,31,22,25,23,27,28,24,26,29,30,21,
+            25,27,22,24,28,30,26,23,29,31,20,22,25,27,24,26,28,30,21,23,
+            25,27,29,31,22,24,26,28,30,20,21,23,25,27,29,31,22,24,26,28,
+            30,21,23,25,27,29,31,20,22,24,26,28,30,21,23,25,27,29,31,22,
+            24,26,28,30,21,23,25,27,29,31,20,22,24,26,28,30,21,23,25,27],
+    
+    'Meditation': ['Yes','No','Yes','No','Yes','No','Yes','No','Yes','No']*10,
+    
+    'Consistency': ['Yes','No','Yes','No','Yes','Yes','Yes','No','Yes','No']*10,
+    
+    'SleepDuration': [8.0,6.5,8.0,6.0,8.0,7.0,7.5,6.0,8.5,6.5]*10,
+    
+    'SleepQuality': ['Excellent','Poor','Excellent','Poor','Excellent','Average','Excellent','Poor','Excellent','Poor']*10,
+    
+    'SleepingDisorder': ['None','Insomnia','None','Insomnia','None','None','None','Insomnia','None','Insomnia']*10
+}
+
+import pandas as pd
+df_100 = pd.DataFrame(data_100)
+df_100
+
 }
 df = pd.DataFrame(data)
 
