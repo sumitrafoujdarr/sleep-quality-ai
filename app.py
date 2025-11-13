@@ -11,6 +11,21 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 import datetime
 
+background-image: url("bg.jpg");
+<style>
+body {
+background-image: url("https://images.unsplash.com/photo-1506744038136-46273834b3fb");
+background-size: cover;
+background-attachment: fixed;
+}
+.stApp {
+background: rgba(255, 255, 255, 0.85);  /* optional: adds slight white overlay for readability */
+}
+</style>
+"""
+st.markdown(page_bg_img, unsafe_allow_html=True)
+
+
 # ----------------------------
 # PAGE CONFIG
 # ----------------------------
