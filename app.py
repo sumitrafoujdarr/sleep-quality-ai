@@ -1,31 +1,29 @@
-# =============================================
-# 🌙 Fully AI-Based Sleep Quality & Recommendation Analyzer
-# =============================================
-
 import streamlit as st
 import pandas as pd
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
 import datetime
-import base64
 
 # ----------------------------
 # BACKGROUND IMAGE
 # ----------------------------
+import base64
+
 def set_background(local_img_path):
     with open(local_img_path, "rb") as image_file:
         encoded_string = base64.b64encode(image_file.read()).decode()
     page_bg_img = f"""
     <style>
     body {{
-        background-image: url("data:image/png;base64,{encoded_string}");
-        background-size: cover;
-        background-attachment: fixed;
+    background-image: url("data:image/png;base64,{encoded_string}");
+    background-size: cover;
+    background-attachment: fixed;
     }}
     .stApp {{
-        background: rgba(255, 255, 255, 0.85);  /* semi-transparent overlay for readability */
+        background: rgba(255, 255, 255, 0.85);  /* semi-transparent overlay */
         padding: 2rem;
         border-radius: 1rem;
     }}
@@ -33,8 +31,7 @@ def set_background(local_img_path):
     """
     st.markdown(page_bg_img, unsafe_allow_html=True)
 
-# Set your local background image
-set_background("bg.jpg")
+set_background("bg.jpg") 
 
 # ----------------------------
 # PAGE CONFIG
@@ -56,6 +53,7 @@ data = {
     'StressLevel': np.random.randint(0,11,N),
     'Disorder': np.random.choice(['None','Insomnia','Mild'], N)
 }
+
 df = pd.DataFrame(data)
 
 # ----------------------------
@@ -71,6 +69,7 @@ def generate_quality(row):
     if score<=1: return 'Poor'
     elif score==2: return 'Average'
     else: return 'Excellent'
+
 df['SleepQuality'] = df.apply(generate_quality, axis=1)
 
 # ----------------------------
@@ -136,33 +135,6 @@ def sleep_enough_by_age(age, duration):
         return 7 <= duration <= 8, "7-8 hours"
 
 # ----------------------------
-# SLEEP SCORE FUNCTION
-# ----------------------------
-def calculate_sleep_score(meditation, consistency, sleep_duration, stress, disorder, min_hours, max_hours):
-    score = 0
-    score += 15 if meditation=="Yes" else 0
-    score += 15 if consistency=="Yes" else 0
-    if sleep_duration < min_hours:
-        score += 0
-    elif sleep_duration > max_hours:
-        score += 10
-    else:
-        score += 20
-    if stress <= 3:
-        score += 20
-    elif stress <= 6:
-        score += 10
-    else:
-        score += 0
-    if disorder=="None":
-        score += 20
-    elif disorder=="Mild":
-        score += 10
-    else:
-        score += 0
-    return min(score, 100)
-
-# ----------------------------
 # USER INPUT
 # ----------------------------
 age = st.number_input("Age", 5, 100, 25)
@@ -207,17 +179,14 @@ if st.button("✨ Analyze My Sleep"):
     elif sleep_duration > max_hours:
         quality = "Average"
 
-    # Calculate sleep score
-    sleep_score = calculate_sleep_score(meditation, consistency, sleep_duration, stress, disorder_input, min_hours, max_hours)
-
     st.markdown("---")
     st.success(f"🌙 Predicted Sleep Quality: **{quality.upper()}**")
     st.info(f"🩺 Disorder: {disorder_input}")
     st.info(f"🛏 Sleep Duration: {sleep_duration} hours")
-    st.info(f"💤 Sleep Score: **{sleep_score}/100**")  # ← Sleep Score displayed
 
     # AI-based recommendations
     rec_list = []
+
     if meditation=="No":
         rec_list.append("Start meditating 10-25 mins daily")
     if consistency=="No":
