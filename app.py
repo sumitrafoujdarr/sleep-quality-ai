@@ -177,7 +177,7 @@ if st.button("✨ Analyze My Sleep"):
     st.markdown("---")
     st.success(f"🌙 Predicted Sleep Quality: **{quality.upper()}**")
     
-    st.info(f"🩺 Sleep isn't just rest - It's Brain repair🧠")
+    st.info(f"🩺 Sleep isn't just rest - It's Brain repair 🧠")
     st.info(f"🛌 AI Sleep Score: **{sleep_score}/100**")
 
     # AI-based recommendations
