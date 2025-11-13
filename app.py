@@ -26,20 +26,51 @@ def set_bg_local(image_file):
         f"""
         <style>
         body {{
-        background-image: url("data:image/jpg;base64,{encoded}");
-        background-size: cover;
-        background-attachment: fixed;
+            background-image: url("data:image/jpg;base64,{encoded}");
+            background-size: cover;
+            background-attachment: fixed;
         }}
         .stApp {{
-        background: rgba(255, 255, 255, 0.85);  /* optional overlay for readability */
+            background: rgba(255, 255, 255, 0.85);  /* optional global overlay */
+        }}
+        .input-container {{
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0px 0px 15px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+        }}
+        .output-container {{
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0px 0px 15px rgba(0,0,0,0.3);
+            margin-top: 20px;
         }}
         </style>
         """,
         unsafe_allow_html=True
     )
 
-# Set your local image
 set_bg_local("bg.jpg")
+
+# ----------------------------
+# USAGE
+# ----------------------------
+st.markdown('<div class="input-container">', unsafe_allow_html=True)
+age = st.number_input("Age", 5, 100, 25)
+meditation = st.selectbox("Do you meditate daily?", ["Yes","No"])
+consistency = st.selectbox("Do you maintain a consistent sleep schedule?", ["Yes","No"])
+stress = st.slider("Stress Level (0-10)", 0, 10, 5)
+bedtime = st.time_input("Bedtime", st.time(23,0))
+wakeuptime = st.time_input("Wakeup Time", st.time(7,0))
+disorder_input = st.selectbox("Any disorder symptoms?", ["None","Insomnia","Mild"])
+st.markdown('</div>', unsafe_allow_html=True)
+
+# For outputs
+st.markdown('<div class="output-container">', unsafe_allow_html=True)
+st.success("This is where your output appears clearly")
+st.markdown('</div>', unsafe_allow_html=True)
 # ----------------------------
 # PAGE CONFIG
 # ----------------------------
