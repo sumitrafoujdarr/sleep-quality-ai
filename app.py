@@ -82,7 +82,6 @@ import pandas as pd
 df_100 = pd.DataFrame(data_100)
 df_100
 
-}
 df = pd.DataFrame(data)
 
 # ----------------------------
