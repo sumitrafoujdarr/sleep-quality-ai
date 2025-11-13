@@ -62,7 +62,7 @@ st.markdown("#### Your Smart AI Sleep Coach — Analyze, Improve & Rise Refreshe
 # ----------------------------
 data = {
     'Age': [20,22,25,30,28,21,24,26,29,31], 'Meditation': ['Yes','No','Yes','No','Yes','No','Yes','No','Yes','No'], 'Consistency': ['Yes','No','Yes','No','Yes','Yes','Yes','No','Yes','No'], 'SleepDuration': [8.0,6.5,8.0,6.0,8.0,7.0,7.5,6.0,8.5,6.5], 'SleepQuality': ['Excellent','Poor','Excellent','Poor','Excellent','Average','Excellent','Poor','Excellent','Poor'], 'SleepingDisorder': ['None','Insomnia','None','Insomnia','None','None','None','Insomnia','None','Insomnia'] }
-}
+
 
 
 # ----------------------------
