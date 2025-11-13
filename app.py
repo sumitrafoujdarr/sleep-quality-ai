@@ -11,7 +11,10 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 import datetime
 
-background-image: url("bg.jpg");
+# ----------------------------
+# BACKGROUND IMAGE
+# ----------------------------
+page_bg_img = """
 <style>
 body {
 background-image: url("https://images.unsplash.com/photo-1506744038136-46273834b3fb");
@@ -19,12 +22,11 @@ background-size: cover;
 background-attachment: fixed;
 }
 .stApp {
-background: rgba(255, 255, 255, 0.85);  /* optional: adds slight white overlay for readability */
+background: rgba(255, 255, 255, 0.85);  /* optional overlay for readability */
 }
 </style>
 """
 st.markdown(page_bg_img, unsafe_allow_html=True)
-
 
 # ----------------------------
 # PAGE CONFIG
@@ -49,7 +51,9 @@ data = {
 
 df = pd.DataFrame(data)
 
-# Generate SleepQuality based on some patterns
+# ----------------------------
+# GENERATE SLEEP QUALITY
+# ----------------------------
 def generate_quality(row):
     score = 0
     score += 1 if row['Meditation']=='Yes' else 0
@@ -63,7 +67,9 @@ def generate_quality(row):
 
 df['SleepQuality'] = df.apply(generate_quality, axis=1)
 
-# Generate Recommendation category
+# ----------------------------
+# GENERATE RECOMMENDATION CATEGORY
+# ----------------------------
 recommendations = ['Reduce caffeine','Meditate more','Exercise regularly',
                    'Maintain consistent sleep','Manage stress','Keep routine','Hydrate & relax']
 df['Recommendation'] = df.apply(lambda x: ', '.join(np.random.choice(recommendations, np.random.randint(1,4), replace=False)), axis=1)
@@ -110,7 +116,6 @@ model_rec.fit(X2_train, y2_train)
 # FUNCTION TO CHECK SUFFICIENT SLEEP
 # ----------------------------
 def sleep_enough_by_age(age, duration):
-    "Return True if duration is within recommended hours for age"
     if 6 <= age <= 12:
         return 9 <= duration <= 11, "9-11 hours"
     elif 13 <= age <= 19:
@@ -163,7 +168,7 @@ if st.button("✨ Analyze My Sleep"):
     pred_quality = model_quality.predict(input_features)
     quality = le_quality.inverse_transform(pred_quality)[0]
 
-    # Adjust quality based on sleep duration vs recommended
+    # Adjust quality based on sleep duration
     if sleep_duration < min_hours:
         quality = "Poor" if sleep_duration < min_hours-1 else "Average"
     elif sleep_duration > max_hours:
