@@ -78,11 +78,6 @@ data = {
     'SleepingDisorder': ['None','Insomnia','None','Insomnia','None','None','None','Insomnia','None','Insomnia']*10
 }
 
-import pandas as pd
-df_100 = pd.DataFrame(data_100)
-df_100
-
-df = pd.DataFrame(data)
 
 # ----------------------------
 # CALCULATE SUFFICIENT SLEEP BASED ON AGE
