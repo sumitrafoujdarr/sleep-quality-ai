@@ -1,6 +1,6 @@
 # =============================================
-# 🌙 Fully AI-Based Sleep Quality & Recommendation Analyzer
-# =============================================
+# 🌙 GoodNight (AI-Based Sleep Quality & Recommendation Analyzer)
+
 
 import streamlit as st
 import pandas as pd
