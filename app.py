@@ -11,39 +11,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 import datetime
 
-import base64
-
-def set_video_bg(video_file):
-    with open(video_file, "rb") as f:
-        video_bytes = f.read()
-    encoded = base64.b64encode(video_bytes).decode()
-
-    st.markdown(
-        f"""
-        <style>
-        .stApp {{
-            overflow: hidden;
-        }}
-        .video-bg {{
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            object-fit: cover;
-        }}
-        </style>
-        <video autoplay muted loop class="video-bg">
-            <source src="data:video/mp4;base64,{encoded}" type="video/mp4">
-        </video>
-        <div style="position: fixed; top:0; left:0; width:100%; height:100%; 
-                    background-color: rgba(0,0,0,0.3); z-index:-1;"></div>
-        """,
-        unsafe_allow_html=True
-    )
-
-set_video_bg("background.mp4")
 
 # ----------------------------
 # PAGE CONFIG
