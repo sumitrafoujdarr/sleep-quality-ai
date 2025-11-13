@@ -103,11 +103,27 @@ y2_pred = model_rec.predict(X2_test)
 acc2 = accuracy_score(y2_test, y2_pred)
 
 # ----------------------------
+# FUNCTION TO CHECK SUFFICIENT SLEEP
+# ----------------------------
+def sleep_enough_by_age(age, duration):
+    """Return True if duration is within recommended hours for age"""
+    if 6 <= age <= 12:  # kids
+        return 9 <= duration <= 11, "9-11 hours"
+    elif 13 <= age <= 19:  # teens
+        return 8 <= duration <= 10, "8-10 hours"
+    elif 20 <= age <= 35:
+        return 7 <= duration <= 9, "7-9 hours"
+    elif 36 <= age <= 50:
+        return 7 <= duration <= 9, "7-9 hours"
+    elif 51 <= age <= 70:
+        return 7 <= duration <= 8, "7-8 hours"
+    else:  # 70+
+        return 7 <= duration <= 8, "7-8 hours"
+
+# ----------------------------
 # USER INPUT
 # ----------------------------
-st.markdown("---")
-st.subheader("🧘‍♀️ Enter Your Sleep & Lifestyle Details")
-
+# (same as your previous code, stress slider 0-10)
 age = st.number_input("Age", 5, 100, 25)
 meditation = st.selectbox("Do you meditate daily?", ["Yes","No"])
 consistency = st.selectbox("Do you maintain a consistent sleep schedule?", ["Yes","No"])
@@ -122,7 +138,12 @@ wt = datetime.datetime.combine(datetime.date.today(), wakeuptime)
 if wt < bt:
     wt += datetime.timedelta(days=1)
 sleep_duration = round((wt - bt).total_seconds()/3600,2)
-st.info(f"🕒 Estimated Sleep Duration: {sleep_duration} hours")
+st.info(f"🕒 Estimated Sleep Duration: **{sleep_duration} hours**")
+
+# Check sleep sufficiency
+enough, ideal_hours = sleep_enough_by_age(age, sleep_duration)
+if not enough:
+    st.warning(f"⚠️ Your sleep is not in the recommended range ({ideal_hours}) for your age.")
 
 # Encode user input
 med_val = le_meditation.transform([meditation])[0]
@@ -142,6 +163,10 @@ if st.button("✨ Analyze My Sleep"):
     st.success(f"🌙 Predicted Sleep Quality: **{quality.upper()}**")
     st.info(f"🩺 Disorder: {disorder_input}")
     st.info(f"🛏 Sleep Duration: {sleep_duration} hours")
+
+    # Sleep duration recommendation
+    if not enough:
+        st.info(f"💤 Recommended Sleep Duration for your age: {ideal_hours}")
 
     # Predict recommendation category
     pred_rec = model_rec.predict(input_features)
