@@ -153,7 +153,7 @@ if st.button("✨ Analyze My Sleep"):
         'Caffeine': ['Reduce caffeine intake', 'Avoid late coffee/tea', 'Drink herbal tea'],
         'Meditation': ['Meditate 10-25 mins daily', 'Practice mindfulness', 'Relaxation exercises'],
         'Exercise': ['Light exercise daily', 'Stretching before bed', 'Yoga for sleep'],
-        'Routine': ['Maintain consistent sleep schedule', 'Go to bed & wake up at same time', 'Limit late-night screen use'],
+        'Routine': ['Maintain consistent sleep schedule', 'Limit late-night screen use'],
         'Stress': ['Manage stress through meditation', 'Avoid heavy workload before bed', 'Deep breathing exercises']
     }
 
