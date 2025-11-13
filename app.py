@@ -4,14 +4,13 @@ import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
 import datetime
+import matplotlib.pyplot as plt
+import base64
 
 # ----------------------------
 # BACKGROUND IMAGE
 # ----------------------------
-import base64
-
 def set_background(local_img_path):
     with open(local_img_path, "rb") as image_file:
         encoded_string = base64.b64encode(image_file.read()).decode()
@@ -23,7 +22,7 @@ def set_background(local_img_path):
     background-attachment: fixed;
     }}
     .stApp {{
-        background: rgba(255, 255, 255, 0.85);  /* semi-transparent overlay */
+        background: rgba(255, 255, 255, 0.85);  
         padding: 2rem;
         border-radius: 1rem;
     }}
@@ -73,13 +72,6 @@ def generate_quality(row):
 df['SleepQuality'] = df.apply(generate_quality, axis=1)
 
 # ----------------------------
-# GENERATE RECOMMENDATION CATEGORY
-# ----------------------------
-recommendations = ['Reduce caffeine','Meditate more','Exercise regularly',
-                   'Maintain consistent sleep','Manage stress','Keep routine','Hydrate & relax']
-df['Recommendation'] = df.apply(lambda x: ', '.join(np.random.choice(recommendations, np.random.randint(1,4), replace=False)), axis=1)
-
-# ----------------------------
 # ENCODE CATEGORICAL FEATURES
 # ----------------------------
 le_meditation = LabelEncoder()
@@ -103,7 +95,7 @@ model_quality = RandomForestClassifier(n_estimators=200, random_state=42)
 model_quality.fit(X1_train, y1_train)
 
 # ----------------------------
-# MODEL 2: Recommendation Prediction
+# MODEL 2: Recommendation Category
 # ----------------------------
 rec_categories = ['Caffeine','Meditation','Exercise','Routine','Stress']
 df['RecCategory'] = np.random.choice(rec_categories, N)
@@ -166,7 +158,7 @@ dis_val = le_disorder.transform([disorder_input])[0]
 input_features = np.array([[age, med_val, con_val, sleep_duration, stress, dis_val]])
 
 # ----------------------------
-# PREDICTION
+# PREDICTION & AI RECOMMENDATIONS
 # ----------------------------
 if st.button("✨ Analyze My Sleep"):
     # Predict sleep quality
@@ -184,9 +176,54 @@ if st.button("✨ Analyze My Sleep"):
     st.info(f"🩺 Disorder: {disorder_input}")
     st.info(f"🛏 Sleep Duration: {sleep_duration} hours")
 
-    # AI-based recommendations
-    rec_list = []
+    # AI Sleep Score
+    pred_prob = model_quality.predict_proba(input_features)[0]
+    sleep_score = int(pred_prob.max() * 100)
+    st.info(f"🌟 AI Sleep Score: **{sleep_score}/100**")
 
+    # Visualize probabilities
+    labels = ['Poor', 'Average', 'Excellent']
+    sizes = pred_prob
+    colors = ['#ff6666','#ffcc66','#66ff66']
+    fig, ax = plt.subplots()
+    ax.pie(sizes, labels=labels, colors=colors, autopct='%1.1f%%', startangle=90)
+    st.pyplot(fig)
+
+    # AI recommendation mapping
+    ai_rec_map = {
+        'Caffeine': [
+            "AI suggests reducing caffeine intake for better sleep cycles.",
+            "AI predicts improved sleep if caffeine is avoided after 3 PM.",
+            "Consider herbal teas in the evening for AI-optimized rest."
+        ],
+        'Meditation': [
+            "AI recommends daily meditation to improve sleep quality.",
+            "Mindfulness exercises detected as helpful by AI models.",
+            "Try 10-25 mins of guided meditation, suggested by AI."
+        ],
+        'Exercise': [
+            "Light evening exercises are predicted to enhance sleep by AI.",
+            "AI suggests gentle stretching before bed.",
+            "Yoga routines recommended by AI for deeper sleep."
+        ],
+        'Routine': [
+            "Maintain a consistent sleep schedule, per AI analysis.",
+            "AI predicts screen-free evenings improve sleep quality.",
+            "AI suggests going to bed and waking up at fixed times."
+        ],
+        'Stress': [
+            "AI detects high stress; recommends deep breathing exercises.",
+            "AI suggests journaling before bed to reduce stress.",
+            "Mindfulness-based stress reduction recommended by AI."
+        ]
+    }
+
+    # Predict recommendation category
+    pred_rec = model_rec.predict(input_features)
+    rec_category = le_rec.inverse_transform(pred_rec)[0]
+    rec_list = np.random.choice(ai_rec_map[rec_category], np.random.randint(1,4), replace=False).tolist()
+
+    # Add dynamic advice based on user input
     if meditation=="No":
         rec_list.append("Start meditating 10-25 mins daily")
     if consistency=="No":
@@ -198,21 +235,14 @@ if st.button("✨ Analyze My Sleep"):
     elif sleep_duration > max_hours:
         rec_list.append(f"Do not oversleep; maintain {ideal_hours}")
 
-    # Predict recommendation category
-    pred_rec = model_rec.predict(input_features)
-    rec_category = le_rec.inverse_transform(pred_rec)[0]
-
-    # Map category to actual advice
-    rec_map = {
-        'Caffeine': ['Reduce caffeine intake', 'Avoid late coffee/tea', 'Drink herbal tea'],
-        'Meditation': ['Meditate 10-25 mins daily', 'Practice mindfulness', 'Relaxation exercises'],
-        'Exercise': ['Light exercise daily', 'Stretching before bed', 'Yoga for sleep'],
-        'Routine': ['Maintain consistent sleep schedule', 'Limit late-night screen use'],
-        'Stress': ['Manage stress through meditation', 'Avoid heavy workload before bed', 'Deep breathing exercises']
-    }
-
-    rec_list.extend(rec_map[rec_category])
-
     st.markdown("### 💡 AI-Generated Recommendations:")
     for advice in rec_list:
         st.markdown(f"🌝 {advice}")
+
+    # Motivational AI message
+    motivation = [
+        "AI believes you can improve your sleep tonight 🌙",
+        "Sleep is vital! AI recommends following your personalized plan 🛌",
+        "Consistency + mindfulness = AI-approved formula for better sleep!"
+    ]
+    st.markdown(f"💡 {np.random.choice(motivation)}")
