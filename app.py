@@ -4,14 +4,12 @@ import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
 import datetime
+import base64
 
 # ----------------------------
 # BACKGROUND IMAGE
 # ----------------------------
-import base64
-
 def set_background(local_img_path):
     with open(local_img_path, "rb") as image_file:
         encoded_string = base64.b64encode(image_file.read()).decode()
@@ -23,7 +21,7 @@ def set_background(local_img_path):
     background-attachment: fixed;
     }}
     .stApp {{
-        background: rgba(255, 255, 255, 0.85);  /* semi-transparent overlay */
+        background: rgba(255, 255, 255, 0.85);  
         padding: 2rem;
         border-radius: 1rem;
     }}
@@ -71,13 +69,6 @@ def generate_quality(row):
     else: return 'Excellent'
 
 df['SleepQuality'] = df.apply(generate_quality, axis=1)
-
-# ----------------------------
-# GENERATE RECOMMENDATION CATEGORY
-# ----------------------------
-recommendations = ['Reduce caffeine','Meditate more','Exercise regularly',
-                   'Maintain consistent sleep','Manage stress','Keep routine','Hydrate & relax']
-df['Recommendation'] = df.apply(lambda x: ', '.join(np.random.choice(recommendations, np.random.randint(1,4), replace=False)), axis=1)
 
 # ----------------------------
 # ENCODE CATEGORICAL FEATURES
@@ -166,7 +157,7 @@ dis_val = le_disorder.transform([disorder_input])[0]
 input_features = np.array([[age, med_val, con_val, sleep_duration, stress, dis_val]])
 
 # ----------------------------
-# PREDICTION
+# PREDICTION & AI RECOMMENDATIONS
 # ----------------------------
 if st.button("✨ Analyze My Sleep"):
     # Predict sleep quality
@@ -179,8 +170,13 @@ if st.button("✨ Analyze My Sleep"):
     elif sleep_duration > max_hours:
         quality = "Average"
 
+    # AI Sleep Score (0-100)
+    pred_prob = model_quality.predict_proba(input_features)[0]
+    sleep_score = int(pred_prob.max() * 100)
+
     st.markdown("---")
     st.success(f"🌙 Predicted Sleep Quality: **{quality.upper()}**")
+    st.metric(label="🛌 AI Sleep Score", value=f"{sleep_score}/100")
     st.info(f"🩺 Disorder: {disorder_input}")
     st.info(f"🛏 Sleep Duration: {sleep_duration} hours")
 
