@@ -170,55 +170,19 @@ if st.button("✨ Analyze My Sleep"):
     elif sleep_duration > max_hours:
         quality = "Average"
 
-    # AI Sleep Score
+    # AI Sleep Score (0-100)
     pred_prob = model_quality.predict_proba(input_features)[0]
     sleep_score = int(pred_prob.max() * 100)
 
-    # Display metrics
-    st.metric(label="Predicted Sleep Quality", value=quality.upper())
-    st.metric(label="AI Sleep Score", value=f"{sleep_score}/100")
+    st.markdown("---")
+    st.success(f"🌙 Predicted Sleep Quality: **{quality.upper()}**")
+    st.metric(label="🛌 AI Sleep Score", value=f"{sleep_score}/100")
     st.info(f"🩺 Disorder: {disorder_input}")
     st.info(f"🛏 Sleep Duration: {sleep_duration} hours")
 
-    # Streamlit-native bar chart for probabilities
-    chart_data = pd.DataFrame({'Probability': pred_prob}, index=['Poor', 'Average', 'Excellent'])
-    st.bar_chart(chart_data)
+    # AI-based recommendations
+    rec_list = []
 
-    # Enhanced AI recommendation mapping
-    ai_rec_map = {
-        'Caffeine': [
-            "Reduce caffeine intake for better sleep",
-            "Avoid coffee/tea after 3 PM",
-            "Try herbal teas in the evening"
-        ],
-        'Meditation': [
-            "Meditate 10-25 mins daily",
-            "Practice mindfulness exercises",
-            "Do relaxation techniques before bed"
-        ],
-        'Exercise': [
-            "Do light daily exercise",
-            "Stretch before bedtime",
-            "Try yoga for better sleep"
-        ],
-        'Routine': [
-            "Maintain a consistent sleep schedule",
-            "Limit screen time before bed",
-            "Go to bed and wake up at fixed times"
-        ],
-        'Stress': [
-            "Manage stress with deep breathing",
-            "Journal before bedtime to relax",
-            "Reduce workload before sleeping"
-        ]
-    }
-
-    # Predict recommendation category
-    pred_rec = model_rec.predict(input_features)
-    rec_category = le_rec.inverse_transform(pred_rec)[0]
-    rec_list = np.random.choice(ai_rec_map[rec_category], np.random.randint(1,4), replace=False).tolist()
-
-    # Dynamic advice based on input
     if meditation=="No":
         rec_list.append("Start meditating 10-25 mins daily")
     if consistency=="No":
@@ -230,14 +194,21 @@ if st.button("✨ Analyze My Sleep"):
     elif sleep_duration > max_hours:
         rec_list.append(f"Do not oversleep; maintain {ideal_hours}")
 
+    # Predict recommendation category
+    pred_rec = model_rec.predict(input_features)
+    rec_category = le_rec.inverse_transform(pred_rec)[0]
+
+    # Map category to actual advice
+    rec_map = {
+        'Caffeine': ['Reduce caffeine intake', 'Avoid late coffee/tea', 'Drink herbal tea'],
+        'Meditation': ['Meditate 10-25 mins daily', 'Practice mindfulness', 'Relaxation exercises'],
+        'Exercise': ['Light exercise daily', 'Stretching before bed', 'Yoga for sleep'],
+        'Routine': ['Maintain consistent sleep schedule', 'Limit late-night screen use'],
+        'Stress': ['Manage stress through meditation', 'Avoid heavy workload before bed', 'Deep breathing exercises']
+    }
+
+    rec_list.extend(rec_map[rec_category])
+
     st.markdown("### 💡 AI-Generated Recommendations:")
     for advice in rec_list:
         st.markdown(f"🌝 {advice}")
-
-    # Motivational AI message
-    motivation = [
-        "AI believes you can improve your sleep tonight 🌙",
-        "Sleep is vital! AI recommends following your personalized plan 🛌",
-        "Consistency + mindfulness = AI-approved formula for better sleep!"
-    ]
-    st.markdown(f"💡 {np.random.choice(motivation)}")
