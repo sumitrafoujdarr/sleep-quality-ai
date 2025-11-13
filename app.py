@@ -13,68 +13,23 @@ import datetime
 
 import base64
 
-def set_video_bg(video_file):
-    with open(video_file, "rb") as f:
-        video_bytes = f.read()
-    encoded = base64.b64encode(video_bytes).decode()
-
+def set_gif_bg(gif_file):
+    with open(gif_file, "rb") as f:
+        encoded = base64.b64encode(f.read()).decode()
     st.markdown(
         f"""
         <style>
         .stApp {{
-            overflow: hidden;
-        }}
-        .video-bg {{
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            object-fit: cover;
+            background: url("data:image/gif;base64,{encoded}") no-repeat center center fixed;
+            background-size: cover;
         }}
         </style>
-        <video autoplay muted loop class="video-bg">
-            <source src="data:video/mp4;base64,{encoded}" type="video/mp4">
-        </video>
-        <div style="position: fixed; top:0; left:0; width:100%; height:100%; 
-                    background-color: rgba(0,0,0,0.3); z-index:-1;"></div>
         """,
         unsafe_allow_html=True
     )
 
-set_video_bg("background.mp4")
-
-# ----------------------------
-# VIDEO BACKGROUND
-# ----------------------------
-def set_video_bg(video_file):
-    st.markdown(
-        f"""
-        <style>
-        .stApp {{
-            overflow: hidden;
-        }}
-        .video-bg {{
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            object-fit: cover;
-        }}
-        </style>
-        <video autoplay muted loop class="video-bg">
-            <source src="{video_file}" type="video/mp4">
-        </video>
-        <div style="position: fixed; top:0; left:0; width:100%; height:100%; 
-                    background-color: rgba(0,0,0,0.3); z-index:-1;"></div>
-        """,
-        unsafe_allow_html=True
-    )
-
-set_video_bg("background.mp4")
+# Call this at the top of your app
+set_gif_bg("background.gif")
 
 
 # ----------------------------
