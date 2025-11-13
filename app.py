@@ -94,7 +94,7 @@ model_quality = RandomForestClassifier(n_estimators=200, random_state=42)
 model_quality.fit(X1_train, y1_train)
 
 # ----------------------------
-# MODEL 2: Recommendation Category
+# MODEL 2: Recommendation Prediction
 # ----------------------------
 rec_categories = ['Caffeine','Meditation','Exercise','Routine','Stress']
 df['RecCategory'] = np.random.choice(rec_categories, N)
@@ -153,6 +153,7 @@ max_hours = int(ideal_hours.split('-')[1].split()[0])
 med_val = le_meditation.transform([meditation])[0]
 con_val = le_consistency.transform([consistency])[0]
 dis_val = le_disorder.transform([disorder_input])[0]
+
 input_features = np.array([[age, med_val, con_val, sleep_duration, stress, dis_val]])
 
 # ----------------------------
@@ -183,32 +184,32 @@ if st.button("✨ Analyze My Sleep"):
     chart_data = pd.DataFrame({'Probability': pred_prob}, index=['Poor', 'Average', 'Excellent'])
     st.bar_chart(chart_data)
 
-    # AI recommendation mapping
+    # Enhanced AI recommendation mapping
     ai_rec_map = {
         'Caffeine': [
-            "AI suggests reducing caffeine intake for better sleep cycles.",
-            "AI predicts improved sleep if caffeine is avoided after 3 PM.",
-            "Consider herbal teas in the evening for AI-optimized rest."
+            "Reduce caffeine intake for better sleep",
+            "Avoid coffee/tea after 3 PM",
+            "Try herbal teas in the evening"
         ],
         'Meditation': [
-            "AI recommends daily meditation to improve sleep quality.",
-            "Mindfulness exercises detected as helpful by AI models.",
-            "Try 10-25 mins of guided meditation, suggested by AI."
+            "Meditate 10-25 mins daily",
+            "Practice mindfulness exercises",
+            "Do relaxation techniques before bed"
         ],
         'Exercise': [
-            "Light evening exercises are predicted to enhance sleep by AI.",
-            "AI suggests gentle stretching before bed.",
-            "Yoga routines recommended by AI for deeper sleep."
+            "Do light daily exercise",
+            "Stretch before bedtime",
+            "Try yoga for better sleep"
         ],
         'Routine': [
-            "Maintain a consistent sleep schedule, per AI analysis.",
-            "AI predicts screen-free evenings improve sleep quality.",
-            "AI suggests going to bed and waking up at fixed times."
+            "Maintain a consistent sleep schedule",
+            "Limit screen time before bed",
+            "Go to bed and wake up at fixed times"
         ],
         'Stress': [
-            "AI detects high stress; recommends deep breathing exercises.",
-            "AI suggests journaling before bed to reduce stress.",
-            "Mindfulness-based stress reduction recommended by AI."
+            "Manage stress with deep breathing",
+            "Journal before bedtime to relax",
+            "Reduce workload before sleeping"
         ]
     }
 
