@@ -1,5 +1,5 @@
 # =============================================
-# 🌙 Fully AI-Based Sleep Quality & Recommendation Analyzer (Context-Aware Recommendations)
+# 🌙 Fully AI-Based Sleep Quality & Recommendation Analyzer
 # =============================================
 
 import streamlit as st
@@ -19,7 +19,7 @@ st.title("🌙 Fully AI-Driven Sleep Quality & Recommendation Analyzer")
 st.markdown("Analyze your sleep and get AI-generated personalized recommendations!")
 
 # ----------------------------
-# SIMULATED DATASET
+# SIMULATED DATASET (500 users)
 # ----------------------------
 np.random.seed(42)
 N = 500
@@ -28,51 +28,28 @@ data = {
     'Meditation': np.random.choice(['Yes','No'], N),
     'Consistency': np.random.choice(['Yes','No'], N),
     'SleepDuration': np.round(np.random.uniform(4,10,N),1),
-    'StressLevel': np.random.randint(0,11,N),  # 0-10
+    'StressLevel': np.random.randint(0,11,N),  # 0-10 scale
     'Disorder': np.random.choice(['None','Insomnia','Mild'], N)
 }
 
 df = pd.DataFrame(data)
 
-# ----------------------------
-# ASSIGN SLEEP QUALITY BASED ON FEATURES INCLUDING SLEEP DURATION
-# ----------------------------
-def assign_sleep_quality(row):
-    # Recommended sleep hours
-    if 6 <= row['Age'] <= 12:
-        min_sleep, max_sleep = 9, 11
-    elif 13 <= row['Age'] <= 19:
-        min_sleep, max_sleep = 8, 10
-    elif 20 <= row['Age'] <= 35:
-        min_sleep, max_sleep = 7, 9
-    elif 36 <= row['Age'] <= 50:
-        min_sleep, max_sleep = 7, 9
-    elif 51 <= row['Age'] <= 70:
-        min_sleep, max_sleep = 7, 8
-    else:
-        min_sleep, max_sleep = 7, 8
-
-    # Sleep duration impact
-    if row['SleepDuration'] < min_sleep - 1:
-        return 'Poor'
-    elif row['SleepDuration'] < min_sleep:
-        return 'Average'
-
-    # Other factors
+# Generate SleepQuality based on some patterns (for demo)
+def generate_quality(row):
     score = 0
     score += 1 if row['Meditation']=='Yes' else 0
     score += 1 if row['Consistency']=='Yes' else 0
-    score += 1 if row['StressLevel'] <=5 else 0
-    score -= 1 if row['Disorder'] != 'None' else 0
-
-    if score <=1: return 'Poor'
+    score += 1 if 7<=row['SleepDuration']<=9 else 0
+    score += 1 if row['StressLevel']<=5 else 0
+    score -= 1 if row['Disorder']!='None' else 0
+    if score<=1: return 'Poor'
     elif score==2: return 'Average'
     else: return 'Excellent'
 
-df['SleepQuality'] = df.apply(assign_sleep_quality, axis=1)
+df['SleepQuality'] = df.apply(generate_quality, axis=1)
 
 # ----------------------------
-# ENCODE FEATURES
+# ENCODE CATEGORICAL FEATURES
 # ----------------------------
 le_meditation = LabelEncoder()
 le_consistency = LabelEncoder()
@@ -98,11 +75,26 @@ acc = accuracy_score(y_test, y_pred)
 st.info(f"🔹 Sleep Quality Model Accuracy: {acc*100:.2f}%")
 
 # ----------------------------
+# FUNCTION TO CHECK SUFFICIENT SLEEP
+# ----------------------------
+def sleep_enough_by_age(age, duration):
+    """Return True if duration is within recommended hours for age"""
+    if 6 <= age <= 12:  # kids
+        return 9 <= duration <= 11, "9-11 hours"
+    elif 13 <= age <= 19:  # teens
+        return 8 <= duration <= 10, "8-10 hours"
+    elif 20 <= age <= 35:
+        return 7 <= duration <= 9, "7-9 hours"
+    elif 36 <= age <= 50:
+        return 7 <= duration <= 9, "7-9 hours"
+    elif 51 <= age <= 70:
+        return 7 <= duration <= 8, "7-8 hours"
+    else:  # 70+
+        return 7 <= duration <= 8, "7-8 hours"
+
+# ----------------------------
 # USER INPUT
 # ----------------------------
-st.markdown("---")
-st.subheader("🧘‍♀️ Enter Your Sleep & Lifestyle Details")
-
 age = st.number_input("Age", 5, 100, 25)
 meditation = st.selectbox("Do you meditate daily?", ["Yes","No"])
 consistency = st.selectbox("Do you maintain a consistent sleep schedule?", ["Yes","No"])
@@ -119,14 +111,20 @@ if wt < bt:
 sleep_duration = round((wt - bt).total_seconds()/3600,2)
 st.info(f"🕒 Estimated Sleep Duration: **{sleep_duration} hours**")
 
+# Check sleep sufficiency
+enough, ideal_hours = sleep_enough_by_age(age, sleep_duration)
+if not enough:
+    st.warning(f"⚠️ Your sleep is not in the recommended range ({ideal_hours}) for your age.")
+
 # Encode user input
 med_val = le_meditation.transform([meditation])[0]
 con_val = le_consistency.transform([consistency])[0]
 dis_val = le_disorder.transform([disorder_input])[0]
+
 input_features = np.array([[age, med_val, con_val, sleep_duration, stress, dis_val]])
 
 # ----------------------------
-# PREDICTION & CONTEXT-AWARE RECOMMENDATIONS
+# PREDICTION & AI RECOMMENDATIONS
 # ----------------------------
 if st.button("✨ Analyze My Sleep"):
     # Predict sleep quality
@@ -141,7 +139,6 @@ if st.button("✨ Analyze My Sleep"):
     # Context-aware AI recommendations
     rec_list = []
 
-    # Check each feature and provide advice if lacking
     if meditation=="No":
         rec_list.append("Meditate 10-25 mins daily to improve sleep quality")
     if consistency=="No":
@@ -150,20 +147,12 @@ if st.button("✨ Analyze My Sleep"):
         rec_list.append("Practice stress management: meditation, deep breathing, or light exercise")
     if disorder_input != "None":
         rec_list.append("Follow sleep disorder management advice, consult a specialist if needed")
-    # Sleep duration recommendations based on age
-    if 20 <= age <= 35:
-        ideal = (7,9)
-    elif 36 <= age <= 50:
-        ideal = (7,9)
-    elif 51 <= age <= 70:
-        ideal = (7,8)
-    else:
-        ideal = (7,9)
-    if sleep_duration < ideal[0]:
-        rec_list.append(f"Increase your sleep to at least {ideal[0]}-{ideal[1]} hours")
-    elif sleep_duration > ideal[1]:
-        rec_list.append(f"Try not to oversleep, maintain {ideal[0]}-{ideal[1]} hours for optimal health")
+    if sleep_duration < int(ideal_hours.split('-')[0]):
+        rec_list.append(f"Increase your sleep to at least {ideal_hours} for optimal rest")
+    elif sleep_duration > int(ideal_hours.split('-')[1]):
+        rec_list.append(f"Try not to oversleep; maintain {ideal_hours} for optimal health")
 
+    # Display AI-generated recommendations
     st.markdown("### 💡 AI-Generated Recommendations:")
     for advice in rec_list:
         st.markdown(f"🔹 {advice}")
