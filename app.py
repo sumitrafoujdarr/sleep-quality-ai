@@ -179,7 +179,7 @@ if st.button("✨ Analyze My Sleep"):
     st.markdown(f"**🛌 AI Sleep Score: {sleep_score}/100**")
 
     st.info(f"🩺 Disorder: {disorder_input}")
-    st.info(f"🛏 Sleep Duration: {sleep_duration} hours")
+    st.info(f"**🛌 AI Sleep Score: {sleep_score}/100**")
 
     # AI-based recommendations
     rec_list = []
