@@ -1,6 +1,3 @@
-# GoodNight (AI-Based Sleep Quality & Recommendation Analyzer)
-
-
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -34,7 +31,6 @@ def set_background(local_img_path):
     """
     st.markdown(page_bg_img, unsafe_allow_html=True)
 
-# Call the function with your downloaded image path
 set_background("bg.jpg") 
 
 # ----------------------------
@@ -219,4 +215,4 @@ if st.button("✨ Analyze My Sleep"):
 
     st.markdown("### 💡 AI-Generated Recommendations:")
     for advice in rec_list:
-        st.markdown(f"🔹 {advice}")
+        st.markdown(f"🌝 {advice}")
