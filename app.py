@@ -88,7 +88,6 @@ y_quality = df['SleepQualityEnc']
 # ----------------------------
 X_train, X_test, y_train, y_test = train_test_split(X, y_quality, test_size=0.2, random_state=42)
 model_quality = RandomForestClassifier(n_estimators=300, random_state=42)
-model_quality.fit(X_train, y_train)
 
 # ----------------------------
 # Train Sleep Score Model (0-100)
