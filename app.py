@@ -93,9 +93,21 @@ model_quality.fit(X_train, y_train)
 # ----------------------------
 # Train Sleep Score Model (0-100)
 # ----------------------------
-df['SleepScore'] = (df['SleepDuration']/10*40 + df['MeditationEnc']*20 + df['ConsistencyEnc']*20 + (10-df['StressLevel'])*2).clip(0,100)
-y_score = df['SleepScore']
-model_score = RandomForestRegressor(n_estimators=300, random_state=42)
+df['SleepScore'] = df.apply(lambda row: sleep_score(
+    row['Age'], 
+    "Yes" if row['Meditation']==1 else "No", 
+    "Yes" if row['Consistency']==1 else "No", 
+    row['StressLevel'], 
+    row['SleepDuration']
+), axis=1)
+
+# Features
+X = df[['Age','Meditation','Consistency','SleepDuration','StressLevel']]
+y = df['SleepScore']
+
+# Split
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 model_score.fit(X_train, y_score)
 
 # ----------------------------
