@@ -110,7 +110,7 @@ model_rec.fit(X2_train, y2_train)
 # FUNCTION TO CHECK SUFFICIENT SLEEP
 # ----------------------------
 def sleep_enough_by_age(age, duration):
-    """Return True if duration is within recommended hours for age"""
+    "Return True if duration is within recommended hours for age"
     if 6 <= age <= 12:
         return 9 <= duration <= 11, "9-11 hours"
     elif 13 <= age <= 19:
