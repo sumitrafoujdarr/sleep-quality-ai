@@ -13,24 +13,37 @@ import datetime
 
 import base64
 
-def set_gif_bg(gif_file):
-    with open(gif_file, "rb") as f:
-        encoded = base64.b64encode(f.read()).decode()
+def set_video_bg(video_file):
+    with open(video_file, "rb") as f:
+        video_bytes = f.read()
+    encoded = base64.b64encode(video_bytes).decode()
+
     st.markdown(
         f"""
         <style>
         .stApp {{
-            background: url("data:image/gif;base64,{encoded}") no-repeat center center fixed;
-            background-size: cover;
+            overflow: hidden;
+        }}
+        .video-bg {{
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            object-fit: cover;
         }}
         </style>
+        <video autoplay muted loop class="video-bg">
+            <source src="data:video/mp4;base64,{encoded}" type="video/mp4">
+        </video>
+        <div style="position: fixed; top:0; left:0; width:100%; height:100%; 
+                    background-color: rgba(0,0,0,0.3); z-index:-1;"></div>
         """,
         unsafe_allow_html=True
     )
 
-# Call this at the top of your app
-set_gif_bg("background.gif")
-
+set_video_bg("background.mp4")
 
 # ----------------------------
 # PAGE CONFIG
