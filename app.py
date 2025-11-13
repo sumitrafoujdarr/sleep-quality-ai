@@ -5,7 +5,6 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
 import datetime
-import matplotlib.pyplot as plt
 import base64
 
 # ----------------------------
@@ -154,7 +153,6 @@ max_hours = int(ideal_hours.split('-')[1].split()[0])
 med_val = le_meditation.transform([meditation])[0]
 con_val = le_consistency.transform([consistency])[0]
 dis_val = le_disorder.transform([disorder_input])[0]
-
 input_features = np.array([[age, med_val, con_val, sleep_duration, stress, dis_val]])
 
 # ----------------------------
@@ -171,23 +169,19 @@ if st.button("✨ Analyze My Sleep"):
     elif sleep_duration > max_hours:
         quality = "Average"
 
-    st.markdown("---")
-    st.success(f"🌙 Predicted Sleep Quality: **{quality.upper()}**")
-    st.info(f"🩺 Disorder: {disorder_input}")
-    st.info(f"🛏 Sleep Duration: {sleep_duration} hours")
-
     # AI Sleep Score
     pred_prob = model_quality.predict_proba(input_features)[0]
     sleep_score = int(pred_prob.max() * 100)
-    st.info(f"🌟 AI Sleep Score: **{sleep_score}/100**")
 
-    # Visualize probabilities
-    labels = ['Poor', 'Average', 'Excellent']
-    sizes = pred_prob
-    colors = ['#ff6666','#ffcc66','#66ff66']
-    fig, ax = plt.subplots()
-    ax.pie(sizes, labels=labels, colors=colors, autopct='%1.1f%%', startangle=90)
-    st.pyplot(fig)
+    # Display metrics
+    st.metric(label="Predicted Sleep Quality", value=quality.upper())
+    st.metric(label="AI Sleep Score", value=f"{sleep_score}/100")
+    st.info(f"🩺 Disorder: {disorder_input}")
+    st.info(f"🛏 Sleep Duration: {sleep_duration} hours")
+
+    # Streamlit-native bar chart for probabilities
+    chart_data = pd.DataFrame({'Probability': pred_prob}, index=['Poor', 'Average', 'Excellent'])
+    st.bar_chart(chart_data)
 
     # AI recommendation mapping
     ai_rec_map = {
@@ -223,7 +217,7 @@ if st.button("✨ Analyze My Sleep"):
     rec_category = le_rec.inverse_transform(pred_rec)[0]
     rec_list = np.random.choice(ai_rec_map[rec_category], np.random.randint(1,4), replace=False).tolist()
 
-    # Add dynamic advice based on user input
+    # Dynamic advice based on input
     if meditation=="No":
         rec_list.append("Start meditating 10-25 mins daily")
     if consistency=="No":
