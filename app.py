@@ -179,10 +179,44 @@ if st.button("✨ Analyze My Sleep"):
     elif sleep_duration > max_hours:
         quality = "Average"
 
+    # ----------------------------
+    # CALCULATE SLEEP SCORE (0-100)
+    # ----------------------------
+    sleep_score = 50  # base score
+    
+    # Adjust based on AI predicted quality
+    if quality == "Excellent":
+        sleep_score += 40
+    elif quality == "Average":
+        sleep_score += 20
+    # Poor → no extra points
+
+    # Adjust for sleep duration relative to ideal
+    if sleep_duration < min_hours:
+        sleep_score -= (min_hours - sleep_duration) * 5
+    elif sleep_duration > max_hours:
+        sleep_score -= (sleep_duration - max_hours) * 5
+
+    # Adjust for stress
+    sleep_score -= stress * 2  # higher stress lowers score
+
+    # Adjust for meditation and consistency
+    if meditation == "Yes":
+        sleep_score += 5
+    if consistency == "Yes":
+        sleep_score += 5
+
+    # Adjust for disorder
+    if disorder_input != "None":
+        sleep_score -= 10
+
+    # Keep score between 0 and 100
+    sleep_score = max(0, min(100, int(sleep_score)))
+
     st.markdown("---")
     st.success(f"🌙 Predicted Sleep Quality: **{quality.upper()}**")
-    st.info(f"🩺 Disorder: {disorder_input}")
-    st.info(f"🛏 Sleep Duration: {sleep_duration} hours")
+    st.info(f"🩺 Sleep isn't just rest - it's Brain repair 🧠")
+    st.info(f"🛏 AI Sleep Score: **{sleep_score}/100**")
 
     # AI-based recommendations
     rec_list = []
