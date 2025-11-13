@@ -25,7 +25,7 @@ def set_background(local_img_path):
     background-attachment: fixed;
     }}
     .stApp {{
-        background: rgba(255, 255, 255, 0.85);  /* semi-transparent overlay */
+        background: rgba(255, 255, 255, 0.85);
         padding: 2rem;
         border-radius: 1rem;
     }}
@@ -33,7 +33,6 @@ def set_background(local_img_path):
     """
     st.markdown(page_bg_img, unsafe_allow_html=True)
 
-# Put your image file name here
 set_background("bg.jpg")  
 
 # ----------------------------
@@ -63,17 +62,16 @@ df = pd.DataFrame(data)
 # ----------------------------
 def sleep_score(meditation, consistency, stress, sleep_duration, ideal_min=7, ideal_max=9):
     score = 0
-    score += 20 if meditation=="Yes" else 0
-    score += 20 if consistency=="Yes" else 0
-    # Stress contribution
-    score += max(0, 20 - stress*2)  # lower stress, higher score
-    # Sleep duration contribution
+    score += 25 if meditation=="Yes" else 0
+    score += 25 if consistency=="Yes" else 0
+    score += max(0, 25 - stress*2)  # lower stress, higher score
+    # Sleep duration contribution with sharper penalties
     if sleep_duration < ideal_min:
-        score += (sleep_duration/ideal_min)*20
+        score += max(0, (sleep_duration/ideal_min)*25)
     elif sleep_duration > ideal_max:
-        score += (ideal_max/sleep_duration)*20
+        score += max(0, (ideal_max/sleep_duration)*25)
     else:
-        score += 20
+        score += 25
     return round(score,1)
 
 # Generate SleepScore
@@ -131,39 +129,39 @@ sleep_duration = round((wt - bt).total_seconds()/3600,2)
 st.info(f"🕒 Estimated Sleep Duration: **{sleep_duration} hours**")
 
 # ----------------------------
-# PREDICTION
+# ANALYZE BUTTON
 # ----------------------------
-# Encode inputs
-med_val = le_meditation.transform([meditation])[0]
-con_val = le_consistency.transform([consistency])[0]
+if st.button("✨ Analyze My Sleep"):
 
-input_features = np.array([[med_val, con_val, stress, sleep_duration]])
-pred_quality = model_quality.predict(input_features)
-pred_quality_label = le_quality.inverse_transform(pred_quality)[0]
+    # Encode inputs
+    med_val = le_meditation.transform([meditation])[0]
+    con_val = le_consistency.transform([consistency])[0]
 
-# Calculate sleep score
-pred_score = sleep_score(meditation, consistency, stress, sleep_duration)
+    input_features = np.array([[med_val, con_val, stress, sleep_duration]])
+    pred_quality = model_quality.predict(input_features)
+    pred_quality_label = le_quality.inverse_transform(pred_quality)[0]
 
-st.markdown("---")
-st.success(f"🌙 Predicted Sleep Quality: **{pred_quality_label}**")
-st.info(f"🛏 Sleep Duration: {sleep_duration} hours")
-st.info(f"🌓 AI Sleep Score: **{pred_score}/100**")
+    # Calculate sleep score
+    pred_score = sleep_score(meditation, consistency, stress, sleep_duration)
 
-# ----------------------------
-# AI-BASED RECOMMENDATIONS
-# ----------------------------
-rec_list = []
-if meditation=="No":
-    rec_list.append("Start meditating 10-25 mins daily")
-if consistency=="No":
-    rec_list.append("Maintain a consistent sleep schedule")
-if stress>5:
-    rec_list.append("Practice stress management techniques")
-if sleep_duration < 7:
-    rec_list.append("Increase sleep duration to at least 7 hours")
-elif sleep_duration > 9:
-    rec_list.append("Avoid oversleeping; maintain 7-9 hours of sleep")
+    st.markdown("---")
+    st.success(f"🌙 Predicted Sleep Quality: **{pred_quality_label}**")
+    st.info(f"🛏 Sleep Duration: {sleep_duration} hours")
+    st.info(f"🌓 AI Sleep Score: **{pred_score}/100**")
 
-st.markdown("### 💡 AI-Generated Recommendations:")
-for advice in rec_list:
-    st.markdown(f"🌝 {advice}")
+    # AI-based recommendations
+    rec_list = []
+    if meditation=="No":
+        rec_list.append("Start meditating 10-25 mins daily")
+    if consistency=="No":
+        rec_list.append("Maintain a consistent sleep schedule")
+    if stress>5:
+        rec_list.append("Practice stress management techniques")
+    if sleep_duration < 7:
+        rec_list.append("Increase sleep duration to at least 7 hours")
+    elif sleep_duration > 9:
+        rec_list.append("Avoid oversleeping; maintain 7-9 hours of sleep")
+
+    st.markdown("### 💡 AI-Generated Recommendations:")
+    for advice in rec_list:
+        st.markdown(f"🌝 {advice}")
