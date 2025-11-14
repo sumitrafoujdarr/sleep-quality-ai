@@ -7,9 +7,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 import datetime
 
-# ----------------------------
+
 # BACKGROUND IMAGE
-# ----------------------------
 import base64
 
 def set_background(local_img_path):
@@ -33,16 +32,12 @@ def set_background(local_img_path):
 
 set_background("bg.jpg") 
 
-# ----------------------------
 # PAGE CONFIG
-# ----------------------------
 st.set_page_config(page_title="AI Sleep Analyzer", page_icon="🌙", layout="centered")
 st.title("🌙 GOODNIGHT (AI-Based Sleep Quality & Recommendation Analyzer)")
 st.markdown("Analyze your sleep and get AI-generated personalized recommendations!")
 
-# ----------------------------
 # SIMULATED DATASET (500 users)
-# ----------------------------
 np.random.seed(42)
 N = 500
 data = {
@@ -56,9 +51,7 @@ data = {
 
 df = pd.DataFrame(data)
 
-# ----------------------------
 # GENERATE SLEEP QUALITY
-# ----------------------------
 def generate_quality(row):
     score = 0
     score += 1 if row['Meditation']=='Yes' else 0
@@ -72,16 +65,12 @@ def generate_quality(row):
 
 df['SleepQuality'] = df.apply(generate_quality, axis=1)
 
-# ----------------------------
 # GENERATE RECOMMENDATION CATEGORY
-# ----------------------------
 recommendations = ['Reduce caffeine','Meditate more','Exercise regularly',
                    'Maintain consistent sleep','Manage stress','Keep routine','Hydrate & relax']
 df['Recommendation'] = df.apply(lambda x: ', '.join(np.random.choice(recommendations, np.random.randint(1,4), replace=False)), axis=1)
 
-# ----------------------------
 # ENCODE CATEGORICAL FEATURES
-# ----------------------------
 le_meditation = LabelEncoder()
 le_consistency = LabelEncoder()
 le_disorder = LabelEncoder()
@@ -92,9 +81,7 @@ df['Consistency'] = le_consistency.fit_transform(df['Consistency'])
 df['Disorder'] = le_disorder.fit_transform(df['Disorder'])
 df['SleepQualityEnc'] = le_quality.fit_transform(df['SleepQuality'])
 
-# ----------------------------
 # MODEL 1: Sleep Quality Prediction
-# ----------------------------
 X1 = df[['Age','Meditation','Consistency','SleepDuration','StressLevel','Disorder']]
 y1 = df['SleepQualityEnc']
 
@@ -102,9 +89,7 @@ X1_train, X1_test, y1_train, y1_test = train_test_split(X1, y1, test_size=0.2, r
 model_quality = RandomForestClassifier(n_estimators=200, random_state=42)
 model_quality.fit(X1_train, y1_train)
 
-# ----------------------------
 # MODEL 2: Recommendation Prediction
-# ----------------------------
 rec_categories = ['Caffeine','Meditation','Exercise','Routine','Stress']
 df['RecCategory'] = np.random.choice(rec_categories, N)
 le_rec = LabelEncoder()
@@ -117,9 +102,8 @@ X2_train, X2_test, y2_train, y2_test = train_test_split(X2, y2, test_size=0.2, r
 model_rec = RandomForestClassifier(n_estimators=200, random_state=42)
 model_rec.fit(X2_train, y2_train)
 
-# ----------------------------
+
 # FUNCTION TO CHECK SUFFICIENT SLEEP
-# ----------------------------
 def sleep_enough_by_age(age, duration):
     if 6 <= age <= 12:
         return 9 <= duration <= 11, "9-11 hours"
@@ -134,9 +118,7 @@ def sleep_enough_by_age(age, duration):
     else:
         return 7 <= duration <= 8, "7-8 hours"
 
-# ----------------------------
 # USER INPUT
-# ----------------------------
 age = st.number_input("Age", 5, 100, 25)
 meditation = st.selectbox("Do you meditate daily?", ["Yes","No"])
 consistency = st.selectbox("Do you maintain a consistent sleep schedule?", ["Yes","No"])
@@ -165,9 +147,7 @@ dis_val = le_disorder.transform([disorder_input])[0]
 
 input_features = np.array([[age, med_val, con_val, sleep_duration, stress, dis_val]])
 
-# ----------------------------
 # PREDICTION
-# ----------------------------
 if st.button("✨ Analyze My Sleep"):
     # Predict sleep quality
     pred_quality = model_quality.predict(input_features)
@@ -179,9 +159,8 @@ if st.button("✨ Analyze My Sleep"):
     elif sleep_duration > max_hours:
         quality = "Average"
 
-    # ----------------------------
+    
     # CALCULATE SLEEP SCORE (0-100)
-    # ----------------------------
     sleep_score = 50  # base score
     
     # Adjust based on AI predicted quality
@@ -215,8 +194,9 @@ if st.button("✨ Analyze My Sleep"):
 
     st.markdown("---")
     st.success(f"🌙 Predicted Sleep Quality: **{quality.upper()}**")
-    st.info(f"🩺 Sleep isn't just rest - it's Brain repair 🧠")
     st.info(f"🛏 AI Sleep Score: **{sleep_score}/100**")
+    st.info(f"🩺 Sleep isn't just rest - it's Brain repair 🧠")
+    
 
     # AI-based recommendations
     rec_list = []
