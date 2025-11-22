@@ -32,7 +32,6 @@ set_background("bg.jpg")
 # ------------------------- PAGE CONFIG ------------------------------
 st.set_page_config(page_title="AI Sleep Analyzer", page_icon="🌙", layout="centered")
 st.title("🌙 GOODNIGHT (AI-Based Sleep Quality & Recommendation Analyzer)")
-st.markdown("Analyze your sleep with AI-powered predictions & real-data trained model.")
 
 # ------------------------- LOAD REAL DATASET ------------------------------
 github_url = "https://raw.githubusercontent.com/sumitrafoujdarr/sleep-quality-ai/refs/heads/main/sleep_dataset.csv"
