@@ -185,21 +185,20 @@ if st.button("✨ Analyze My Sleep"):
         st.markdown(f"🌝 {r}")
 
     # ---------------------- QUOTES SECTION ----------------------
-    quotes = [
-        "Your future depends on your dreams—so go to sleep.",
-        "Sleep is the best meditation.",
-        "A well-rested mind is a powerful mind.",
-        "Good sleep is the foundation of a healthy life.",
-        "Your body heals when you sleep.",
-        "Let today’s worries drift away with tonight’s dream.",
-        "Sleep because your body loves you.",
-        "Every good day starts the night before.",
-        "Rest is not a waste of time; it’s an investment.",
-        "The best bridge between despair and hope is a good night’s sleep."
-    ]
+quotes = [
+    "Your future depends on your dreams—so go to sleep.",
+    "Sleep is the best meditation.",
+    "A well-rested mind is a powerful mind.",
+    "Good sleep is the foundation of a healthy life.",
+    "Your body heals when you sleep.",
+    "Let today’s worries drift away with tonight’s dream.",
+    "Sleep because your body loves you.",
+    "Every good day starts the night before.",
+    "Rest is not a waste of time; it’s an investment.",
+    "The best bridge between despair and hope is a good night’s sleep."
+]
 
-    np.random.shuffle(quotes)
+random_quote = np.random.choice(quotes)
 
-    st.markdown("## 🌟 Sleep Inspiration Quotes")
-    for q in quotes:
-        st.markdown(f"💫 *{q}*")
+st.markdown("## 🌟 Sleep Inspiration Quote")
+st.markdown(f"💫 *{random_quote}*")
