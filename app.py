@@ -35,10 +35,14 @@ st.title("🌙 GOODNIGHT (AI-Based Sleep Quality & Recommendation Analyzer)")
 st.markdown("Analyze your sleep with AI-powered predictions & real-data trained model.")
 
 # ------------------------- LOAD REAL DATASET ------------------------------
-github_url = "https://raw.githubusercontent.com/sumitrafoujdarr/sleep-quality-ai/refs/heads/main/sleep_dataset.csv"
-
-df = pd.read_csv(github_url)
+dataset_path = "/mnt/data/sleep_dataset.csv"   # from your uploaded file
+df = pd.read_csv(dataset_path)
 st.success(f"Loaded Real Dataset: {df.shape[0]} rows")
+
+# FIX NAN ISSUES
+df["Disorder"] = df["Disorder"].fillna("None")
+df["Meditation"] = df["Meditation"].fillna("No")
+df["Consistency"] = df["Consistency"].fillna("No")
 
 # --------------------- ENCODING LABELS -------------------
 le_meditation = LabelEncoder()
@@ -92,15 +96,19 @@ stress = st.slider("Stress Level (0-10)", 0, 10, 5)
 bedtime = st.time_input("Bedtime", datetime.time(23,0))
 wakeuptime = st.time_input("Wakeup Time", datetime.time(7,0))
 
-# ------------------ FIXED DISORDER SELECTOR (ONLY VALID DATASET LABELS) ------------------
+# ------------------ FIXED DISORDER SELECTOR (Remove nan) ------------------
+disorder_options = [d for d in le_disorder.classes_ if str(d).lower() != "nan"]
+
 disorder_input = st.selectbox(
     "Any disorder symptoms?",
-    list(le_disorder.classes_)     # only dataset-supported labels
+    disorder_options
 )
 
-# Safe transform (prevents errors)
+# Safe transform fallback
 if disorder_input not in le_disorder.classes_:
-    disorder_input = le_disorder.classes_[0]
+    disorder_input = "None"
+
+dis_val = le_disorder.transform([disorder_input])[0]
 
 # ------------------------------ SLEEP DURATION ------------------------------
 bt = datetime.datetime.combine(datetime.date.today(), bedtime)
@@ -119,18 +127,17 @@ max_hours = int(ideal_hours.split("-")[1].split()[0])
 # ------------------------------ ENCODE INPUTS ------------------------------
 med_val = le_meditation.transform([meditation])[0]
 con_val = le_consistency.transform([consistency])[0]
-dis_val = le_disorder.transform([disorder_input])[0]
 
 input_features = np.array([[age, med_val, con_val, sleep_duration, stress, dis_val]])
 
 # ------------------------------ MAIN PREDICTION BUTTON ------------------------------
 if st.button("✨ Analyze My Sleep"):
     
-    # AI prediction — Sleep Quality
+    # Predict Quality
     pred_quality = model_quality.predict(input_features)
     quality = le_quality.inverse_transform(pred_quality)[0]
 
-    # Adjust quality
+    # Adjust by duration
     if sleep_duration < min_hours:
         quality = "Poor" if sleep_duration < min_hours - 1 else "Average"
     elif sleep_duration > max_hours:
@@ -138,7 +145,6 @@ if st.button("✨ Analyze My Sleep"):
 
     # Sleep Score
     sleep_score = 50
-
     if quality == "Excellent":
         sleep_score += 40
     elif quality == "Average":
@@ -151,30 +157,4 @@ if st.button("✨ Analyze My Sleep"):
 
     sleep_score -= stress * 2
     if meditation == "Yes":
-        sleep_score += 5
-    if consistency == "Yes":
-        sleep_score += 5
-    if disorder_input != "None":
-        sleep_score -= 10
-
-    sleep_score = max(0, min(100, int(sleep_score)))
-
-    st.markdown("---")
-    st.success(f"🌙 Predicted Sleep Quality: **{quality.upper()}**")
-    st.info(f"🛏 AI Sleep Score: **{sleep_score}/100**")
-
-    # Predict Recommendation Category
-    pred_rec = model_rec.predict(input_features)
-    rec_category = le_rec.inverse_transform(pred_rec)[0]
-
-    rec_map = {
-        'Caffeine': ['Reduce caffeine intake', 'Avoid caffeine at night'],
-        'Meditation': ['Meditate 10–20 mins daily', 'Practice deep breathing'],
-        'Exercise': ['Light exercise daily', 'Yoga for sleep'],
-        'Routine': ['Fix your sleep schedule', 'Avoid late-night screens'],
-        'Stress': ['Stress-relief breathing exercises', 'Avoid heavy work before bed']
-    }
-
-    st.markdown("### 💡 AI Recommendations:")
-    for r in rec_map[rec_category]:
-        st.markdown(f"🌝 {r}")
+        sleep_scor_
