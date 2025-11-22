@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import datetime
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
 import base64
@@ -27,18 +27,30 @@ def set_background(local_img_path):
     """
     st.markdown(page_bg_img, unsafe_allow_html=True)
 
+
+# ------------------------- SIMPLE NLP-BASED ADVICE ------------------------------
+# Plug any NLP/GPT API inside this function
+def generate_ai_advice(age, stress, duration, quality, disorder):
+    return f"""
+1. Based on your sleep duration of {duration} hours and stress level {stress}, try 10 minutes of slow breathing before sleep.
+2. Since your predicted quality is **{quality}**, maintain a regular routine and avoid screens 1 hour before bed.
+3. Your reported condition: **{disorder}**. Try relaxing activities like meditation or mild stretching.
+"""
+
+
+# ------------------------- MAIN APP ------------------------------
 def show_sleep_app():
 
     set_background("bg.jpg")
-
     st.set_page_config(page_title="AI Sleep Analyzer", page_icon="🌙", layout="centered")
-    st.title("🌙 GOODNIGHT (AI-Based Sleep Quality & Recommendation Analyzer)")
+    st.title("🌙 GOODNIGHT (Fully AI-Based Sleep Quality, Score & Recommendation Analyzer)")
 
+    # Dataset
     github_url = "https://raw.githubusercontent.com/sumitrafoujdarr/sleep-quality-ai/refs/heads/main/sleep_dataset.csv"
     df = pd.read_csv(github_url)
-
     df["Disorder"] = df["Disorder"].fillna("None")
 
+    # Label Encoders
     le_meditation = LabelEncoder()
     le_consistency = LabelEncoder()
     le_disorder = LabelEncoder()
@@ -51,6 +63,7 @@ def show_sleep_app():
     df["QualityEnc"] = le_quality.fit_transform(df["SleepQuality"])
     df["RecEnc"] = le_rec.fit_transform(df["RecCategory"])
 
+    # ========================= 1. Sleep Quality Model =========================
     X1 = df[["Age", "MeditationEnc", "ConsistencyEnc", "SleepDuration", "StressLevel", "DisorderEnc"]]
     y1 = df["QualityEnc"]
 
@@ -58,6 +71,7 @@ def show_sleep_app():
     model_quality = RandomForestClassifier(n_estimators=200, random_state=42)
     model_quality.fit(X1_train, y1_train)
 
+    # ========================= 2. Recommendation Category Model =========================
     X2 = X1.copy()
     y2 = df["RecEnc"]
 
@@ -65,27 +79,25 @@ def show_sleep_app():
     model_rec = RandomForestClassifier(n_estimators=200, random_state=42)
     model_rec.fit(X2_train, y2_train)
 
-    def sleep_enough_by_age(age, duration):
-        if 6 <= age <= 12:
-            return 9 <= duration <= 11, "9-11 hours"
-        elif 13 <= age <= 19:
-            return 8 <= duration <= 10, "8-10 hours"
-        elif 20 <= age <= 35:
-            return 7 <= duration <= 9, "7-9 hours"
-        elif 36 <= age <= 50:
-            return 7 <= duration <= 9, "7-9 hours"
-        elif 51 <= age <= 70:
-            return 7 <= duration <= 8, "7-8 hours"
-        else:
-            return 7 <= duration <= 8, "7-8 hours"
+    # ========================= 3. Sleep Score Model (Regression) =========================
+    # Create numeric score mapping for training
+    score_map = {"Poor": 30, "Average": 60, "Excellent": 90}
+    df["SleepScore"] = df["SleepQuality"].map(score_map)
 
-    # USER INPUTS
+    X3 = X1.copy()
+    y3 = df["SleepScore"]
+
+    X3_train, X3_test, y3_train, y3_test = train_test_split(X3, y3, test_size=0.2, random_state=42)
+    model_score = RandomForestRegressor(n_estimators=200, random_state=42)
+    model_score.fit(X3_train, y3_train)
+
+    # ========================= USER INPUTS =========================
     age = st.number_input("Age", 5, 100, 25)
     meditation = st.selectbox("Do you meditate daily?", ["Yes", "No"])
     consistency = st.selectbox("Do you maintain a consistent sleep schedule?", ["Yes", "No"])
     stress = st.slider("Stress Level (0-10)", 0, 10, 5)
-    bedtime = st.time_input("Bedtime", datetime.time(23,0))
-    wakeuptime = st.time_input("Wakeup Time", datetime.time(7,0))
+    bedtime = st.time_input("Bedtime", datetime.time(23, 0))
+    wakeuptime = st.time_input("Wakeup Time", datetime.time(7, 0))
 
     disorder_options = [d for d in le_disorder.classes_ if str(d).lower() != "nan"]
     disorder_input = st.selectbox("Any disorder symptoms?", disorder_options)
@@ -93,89 +105,63 @@ def show_sleep_app():
     if disorder_input not in le_disorder.classes_:
         disorder_input = "None"
 
+    # Sleep duration
     bt = datetime.datetime.combine(datetime.date.today(), bedtime)
     wt = datetime.datetime.combine(datetime.date.today(), wakeuptime)
     if wt < bt:
         wt += datetime.timedelta(days=1)
 
-    sleep_duration = round((wt - bt).total_seconds()/3600, 2)
+    sleep_duration = round((wt - bt).total_seconds() / 3600, 2)
     st.info(f"🕒 Estimated Sleep Duration: **{sleep_duration} hours**")
 
-    enough, ideal_hours = sleep_enough_by_age(age, sleep_duration)
-    min_hours = int(ideal_hours.split("-")[0])
-    max_hours = int(ideal_hours.split("-")[1].split()[0])
-
+    # Encoding values
     med_val = le_meditation.transform([meditation])[0]
     con_val = le_consistency.transform([consistency])[0]
     dis_val = le_disorder.transform([disorder_input])[0]
 
     input_features = np.array([[age, med_val, con_val, sleep_duration, stress, dis_val]])
 
+    # ========================= PREDICTION =========================
     if st.button("✨ Analyze My Sleep"):
 
+        # 1. Pure ML Sleep Quality Prediction
         pred_quality = model_quality.predict(input_features)
         quality = le_quality.inverse_transform(pred_quality)[0]
 
-        if sleep_duration < min_hours:
-            quality = "Poor" if sleep_duration < min_hours - 1 else "Average"
-        elif sleep_duration > max_hours:
-            quality = "Average"
-
-        sleep_score = 50
-
-        if quality == "Excellent":
-            sleep_score += 40
-        elif quality == "Average":
-            sleep_score += 20
-        
-        if sleep_duration < min_hours:
-            sleep_score -= (min_hours - sleep_duration) * 5
-        elif sleep_duration > max_hours:
-            sleep_score -= (sleep_duration - max_hours) * 5
-
-        sleep_score -= stress * 2
-        if meditation == "Yes":
-            sleep_score += 5
-        if consistency == "Yes":
-            sleep_score += 5
-        if disorder_input != "None":
-            sleep_score -= 10
-
-        sleep_score = max(0, min(100, int(sleep_score)))
-
         st.markdown("---")
-        st.success(f"🌙 Predicted Sleep Quality: **{quality.upper()}**")
-        st.info(f"🛏 AI Sleep Score: **{sleep_score}/100**")
+        st.success(f"🌙 Predicted Sleep Quality (AI): **{quality.upper()}**")
 
+        # 2. ML-Based Sleep Score Prediction
+        predicted_score = int(model_score.predict(input_features)[0])
+        predicted_score = max(0, min(100, predicted_score))
+
+        st.info(f"🛏 AI Sleep Score: **{predicted_score}/100**")
+
+        # 3. AI Recommendation Category (ML)
         pred_rec = model_rec.predict(input_features)
         rec_category = le_rec.inverse_transform(pred_rec)[0]
 
-        rec_map = {
-            'Caffeine': ['Reduce caffeine intake', 'Avoid caffeine at night'],
-            'Meditation': ['Meditate 10–20 mins daily', 'Practice deep breathing'],
-            'Exercise': ['Light exercise daily', 'Yoga for sleep'],
-            'Routine': ['Fix your sleep schedule', 'Avoid late-night screens'],
-            'Stress': ['Stress-relief breathing exercises', 'Avoid heavy work before bed']
-        }
+        # 4. NLP-Based Personalized Advice
+        ai_advice = generate_ai_advice(age, stress, sleep_duration, quality, disorder_input)
 
-        st.markdown("### 💡 AI Recommendations:")
-        for r in rec_map[rec_category]:
-            st.markdown(f"🌝 {r}")
+        st.markdown("### 💡 AI Personalized Recommendations:")
+        st.write(ai_advice)
 
+        # Inspiration Quotes
         quotes = [
             "Your future depends on your dreams—so go to sleep.",
             "Sleep is the best meditation.",
             "A well-rested mind is a powerful mind.",
             "Good sleep is the foundation of a healthy life.",
             "Your body heals when you sleep.",
-            "Let today’s worries drift away with tonight’s dream.",
-            "Sleep because your body loves you.",
             "Every good day starts the night before.",
-            "Rest is not a waste of time; it’s an investment.",
-            "The best bridge between despair and hope is a good night’s sleep."
+            "Rest is not a waste of time; it’s an investment."
         ]
 
         random_quote = np.random.choice(quotes)
-
         st.markdown("## 🌟 Sleep Inspiration Quote")
         st.markdown(f"💫 *{random_quote}*")
+
+
+# Run app
+show_sleep_app()
