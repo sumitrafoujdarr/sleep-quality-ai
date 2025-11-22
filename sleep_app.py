@@ -28,13 +28,9 @@ def set_background(local_img_path):
     st.markdown(page_bg_img, unsafe_allow_html=True)
 
 
-# ------------------------- SIMPLE NLP-BASED ADVICE ------------------------------
+# ------------------------- SIMPLE NLP-BASED ADVICE (NOT USED NOW) ------------------------------
 def generate_ai_advice(age, stress, duration, quality, disorder):
-    return f"""
-1. Based on your sleep duration of {duration} hours and stress level {stress}, try 10 minutes of slow breathing before sleep.
-2. Since your predicted quality is **{quality}**, maintain a regular routine and avoid screens 1 hour before bed.
-3. Your reported condition: **{disorder}**. Try relaxing activities like meditation or mild stretching.
-"""
+    return ""
 
 
 # ------------------------- MAIN APP ------------------------------
@@ -135,15 +131,12 @@ def show_sleep_app():
         predicted_score = max(0, min(100, predicted_score))
         st.info(f"🛏 AI Sleep Score: **{predicted_score}/100**")
 
-        # 3. Recommendation Category Prediction (NOW ADDED!)
+        # 3. Recommendation Category Prediction
         pred_rec = model_rec.predict(input_features)
         rec_category = le_rec.inverse_transform(pred_rec)[0]
         st.warning(f"🧭 Recommendation Category: **{rec_category}**")
 
-        # 4. Personalized AI Advice
-        ai_advice = generate_ai_advice(age, stress, sleep_duration, quality, disorder_input)
-        st.markdown("### 💡 AI Personalized Recommendations:")
-        st.write(ai_advice)
+        # 4. (REMOVED) Personalized Advice
 
         # 5. Inspiration Quote
         quotes = [
