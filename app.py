@@ -35,7 +35,7 @@ st.title("🌙 GOODNIGHT (AI-Based Sleep Quality & Recommendation Analyzer)")
 st.markdown("Analyze your sleep with AI-powered predictions & real-data trained model.")
 
 # ------------------------- LOAD REAL DATASET ------------------------------
-github_url = "https://raw.githubusercontent.com/sumitrafoujdarr/sleep-quality-ai/refs/heads/main/sleep%20quality%20dataset.csv"
+github_url = "https://raw.githubusercontent.com/sumitrafoujdarr/sleep-quality-ai/refs/heads/main/sleep_dataset.csv"
 
 df = pd.read_csv(github_url)
 st.success(f"Loaded Real Dataset: {df.shape[0]} rows")
