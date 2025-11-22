@@ -128,7 +128,7 @@ def show_sleep_app():
         # 1. Sleep Quality Prediction
         pred_quality = model_quality.predict(input_features)
         quality = le_quality.inverse_transform(pred_quality)[0]
-        st.success(f"🌙 Predicted Sleep Quality (AI): **{quality.upper()}**")
+        st.success(f"🌙 Predicted Sleep Quality: **{quality.upper()}**")
 
         # 2. Sleep Score Prediction
         predicted_score = int(model_score.predict(input_features)[0])
