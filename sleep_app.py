@@ -29,7 +29,6 @@ def set_background(local_img_path):
 
 
 # ------------------------- SIMPLE NLP-BASED ADVICE ------------------------------
-# Plug any NLP/GPT API inside this function
 def generate_ai_advice(age, stress, duration, quality, disorder):
     return f"""
 1. Based on your sleep duration of {duration} hours and stress level {stress}, try 10 minutes of slow breathing before sleep.
@@ -41,8 +40,9 @@ def generate_ai_advice(age, stress, duration, quality, disorder):
 # ------------------------- MAIN APP ------------------------------
 def show_sleep_app():
 
-    set_background("bg.jpg")
     st.set_page_config(page_title="AI Sleep Analyzer", page_icon="🌙", layout="centered")
+    set_background("bg.jpg")
+
     st.title("🌙 GOODNIGHT (Fully AI-Based Sleep Quality, Score & Recommendation Analyzer)")
 
     # Dataset
@@ -80,7 +80,6 @@ def show_sleep_app():
     model_rec.fit(X2_train, y2_train)
 
     # ========================= 3. Sleep Score Model (Regression) =========================
-    # Create numeric score mapping for training
     score_map = {"Poor": 30, "Average": 60, "Excellent": 90}
     df["SleepScore"] = df["SleepQuality"].map(score_map)
 
@@ -105,7 +104,7 @@ def show_sleep_app():
     if disorder_input not in le_disorder.classes_:
         disorder_input = "None"
 
-    # Sleep duration
+    # Sleep duration calculation
     bt = datetime.datetime.combine(datetime.date.today(), bedtime)
     wt = datetime.datetime.combine(datetime.date.today(), wakeuptime)
     if wt < bt:
@@ -114,7 +113,7 @@ def show_sleep_app():
     sleep_duration = round((wt - bt).total_seconds() / 3600, 2)
     st.info(f"🕒 Estimated Sleep Duration: **{sleep_duration} hours**")
 
-    # Encoding values
+    # Encoding input
     med_val = le_meditation.transform([meditation])[0]
     con_val = le_consistency.transform([consistency])[0]
     dis_val = le_disorder.transform([disorder_input])[0]
@@ -124,30 +123,29 @@ def show_sleep_app():
     # ========================= PREDICTION =========================
     if st.button("✨ Analyze My Sleep"):
 
-        # 1. Pure ML Sleep Quality Prediction
+        st.markdown("---")
+
+        # 1. Sleep Quality Prediction
         pred_quality = model_quality.predict(input_features)
         quality = le_quality.inverse_transform(pred_quality)[0]
-
-        st.markdown("---")
         st.success(f"🌙 Predicted Sleep Quality (AI): **{quality.upper()}**")
 
-        # 2. ML-Based Sleep Score Prediction
+        # 2. Sleep Score Prediction
         predicted_score = int(model_score.predict(input_features)[0])
         predicted_score = max(0, min(100, predicted_score))
-
         st.info(f"🛏 AI Sleep Score: **{predicted_score}/100**")
 
-        # 3. AI Recommendation Category (ML)
+        # 3. Recommendation Category Prediction (NOW ADDED!)
         pred_rec = model_rec.predict(input_features)
         rec_category = le_rec.inverse_transform(pred_rec)[0]
+        st.warning(f"🧭 Recommendation Category: **{rec_category}**")
 
-        # 4. NLP-Based Personalized Advice
+        # 4. Personalized AI Advice
         ai_advice = generate_ai_advice(age, stress, sleep_duration, quality, disorder_input)
-
         st.markdown("### 💡 AI Personalized Recommendations:")
         st.write(ai_advice)
 
-        # Inspiration Quotes
+        # 5. Inspiration Quote
         quotes = [
             "Your future depends on your dreams—so go to sleep.",
             "Sleep is the best meditation.",
@@ -157,7 +155,6 @@ def show_sleep_app():
             "Every good day starts the night before.",
             "Rest is not a waste of time; it’s an investment."
         ]
-
         random_quote = np.random.choice(quotes)
         st.markdown("## 🌟 Sleep Inspiration Quote")
         st.markdown(f"💫 *{random_quote}*")
