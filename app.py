@@ -37,7 +37,6 @@ st.title("🌙 GOODNIGHT (AI-Based Sleep Quality & Recommendation Analyzer)")
 github_url = "https://raw.githubusercontent.com/sumitrafoujdarr/sleep-quality-ai/refs/heads/main/sleep_dataset.csv"
 
 df = pd.read_csv(github_url)
-st.success(f"Loaded Real Dataset: {df.shape[0]} rows")
 
 # FIX: Replace NaN in Disorder with "None"
 df["Disorder"] = df["Disorder"].fillna("None")
