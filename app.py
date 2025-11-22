@@ -40,7 +40,7 @@ github_url = "https://raw.githubusercontent.com/sumitrafoujdarr/sleep-quality-ai
 df = pd.read_csv(github_url)
 st.success(f"Loaded Real Dataset: {df.shape[0]} rows")
 
-# --------------------- ENCODING LABELS (Using Real Dataset Columns) -------------------
+# --------------------- ENCODING LABELS -------------------
 le_meditation = LabelEncoder()
 le_consistency = LabelEncoder()
 le_disorder = LabelEncoder()
@@ -91,9 +91,18 @@ consistency = st.selectbox("Do you maintain a consistent sleep schedule?", ["Yes
 stress = st.slider("Stress Level (0-10)", 0, 10, 5)
 bedtime = st.time_input("Bedtime", datetime.time(23,0))
 wakeuptime = st.time_input("Wakeup Time", datetime.time(7,0))
-disorder_input = st.selectbox("Any disorder symptoms?", ["None","Insomnia","Mild"])
 
-# Calculate sleep duration
+# ------------------ FIXED DISORDER SELECTOR (ONLY VALID DATASET LABELS) ------------------
+disorder_input = st.selectbox(
+    "Any disorder symptoms?",
+    list(le_disorder.classes_)     # only dataset-supported labels
+)
+
+# Safe transform (prevents errors)
+if disorder_input not in le_disorder.classes_:
+    disorder_input = le_disorder.classes_[0]
+
+# ------------------------------ SLEEP DURATION ------------------------------
 bt = datetime.datetime.combine(datetime.date.today(), bedtime)
 wt = datetime.datetime.combine(datetime.date.today(), wakeuptime)
 if wt < bt:
@@ -102,12 +111,12 @@ if wt < bt:
 sleep_duration = round((wt - bt).total_seconds()/3600, 2)
 st.info(f"🕒 Estimated Sleep Duration: **{sleep_duration} hours**")
 
-# Range checking
+# Age range check
 enough, ideal_hours = sleep_enough_by_age(age, sleep_duration)
 min_hours = int(ideal_hours.split("-")[0])
 max_hours = int(ideal_hours.split("-")[1].split()[0])
 
-# Encode inputs
+# ------------------------------ ENCODE INPUTS ------------------------------
 med_val = le_meditation.transform([meditation])[0]
 con_val = le_consistency.transform([consistency])[0]
 dis_val = le_disorder.transform([disorder_input])[0]
@@ -121,14 +130,13 @@ if st.button("✨ Analyze My Sleep"):
     pred_quality = model_quality.predict(input_features)
     quality = le_quality.inverse_transform(pred_quality)[0]
 
-    # Adjust based on duration
+    # Adjust quality
     if sleep_duration < min_hours:
         quality = "Poor" if sleep_duration < min_hours - 1 else "Average"
     elif sleep_duration > max_hours:
         quality = "Average"
 
-    # AI Sleep Score
-    sleep_score = df["SleepScore"].mean()  
+    # Sleep Score
     sleep_score = 50
 
     if quality == "Excellent":
@@ -155,7 +163,7 @@ if st.button("✨ Analyze My Sleep"):
     st.success(f"🌙 Predicted Sleep Quality: **{quality.upper()}**")
     st.info(f"🛏 AI Sleep Score: **{sleep_score}/100**")
 
-    # Recommendation Category Prediction
+    # Predict Recommendation Category
     pred_rec = model_rec.predict(input_features)
     rec_category = le_rec.inverse_transform(pred_rec)[0]
 
@@ -170,4 +178,3 @@ if st.button("✨ Analyze My Sleep"):
     st.markdown("### 💡 AI Recommendations:")
     for r in rec_map[rec_category]:
         st.markdown(f"🌝 {r}")
-
