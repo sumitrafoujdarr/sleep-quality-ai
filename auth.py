@@ -16,7 +16,7 @@ def init_session():
         st.session_state.show_signup = False
 
 
-# -------- SIGNUP PAGE ----------
+# SIGNUP PAGE 
 def signup_page():
     st.title("📝 Create Account")
 
@@ -40,7 +40,7 @@ def signup_page():
         st.session_state.show_signup = False
 
 
-# -------- LOGIN PAGE ----------
+# LOGIN PAGE
 def login_page():
     st.title("🔐 Login to Continue")
 
@@ -58,13 +58,13 @@ def login_page():
         st.session_state.show_signup = True
 
 
-# -------- LOGOUT BUTTON ----------
+# LOGOUT BUTTON 
 def logout_button():
     if st.button("Logout"):
         st.session_state.logged_in = False
 
 
-# -------- AUTH CONTROLLER ----------
+# AUTH CONTROLLER 
 def authentication_controller():
     init_session()
 
