@@ -7,7 +7,7 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
 import base64
 
-# ------------------------- BACKGROUND IMAGE ------------------------------
+# BACKGROUND IMAGE
 def set_background(local_img_path):
     with open(local_img_path, "rb") as image_file:
         encoded_string = base64.b64encode(image_file.read()).decode()
@@ -28,7 +28,7 @@ def set_background(local_img_path):
     st.markdown(page_bg_img, unsafe_allow_html=True)
 
 
-# ------------------------- AI ADVICE FUNCTION (ADDED BACK) ------------------------------
+# AI ADVICE FUNCTION (ADDED BACK)
 def generate_ai_advice(age, stress, duration, quality, disorder):
     return f"""
 1. Based on your sleep duration of **{duration} hours** and stress level **{stress}**, try 10 minutes of slow breathing before sleep.
@@ -37,7 +37,7 @@ def generate_ai_advice(age, stress, duration, quality, disorder):
 """
 
 
-# ------------------------- MAIN APP ------------------------------
+# MAIN APP
 def show_sleep_app():
 
     st.set_page_config(page_title="AI Sleep Analyzer", page_icon="🌙", layout="centered")
@@ -63,7 +63,7 @@ def show_sleep_app():
     df["QualityEnc"] = le_quality.fit_transform(df["SleepQuality"])
     df["RecEnc"] = le_rec.fit_transform(df["RecCategory"])
 
-    # ========================= 1. Sleep Quality Model =========================
+    # 1. Sleep Quality Model 
     X1 = df[["Age", "MeditationEnc", "ConsistencyEnc", "SleepDuration", "StressLevel", "DisorderEnc"]]
     y1 = df["QualityEnc"]
 
@@ -71,7 +71,7 @@ def show_sleep_app():
     model_quality = RandomForestClassifier(n_estimators=200, random_state=42)
     model_quality.fit(X1_train, y1_train)
 
-    # ========================= 2. Recommendation Category Model =========================
+    # 2. Recommendation Category Model 
     X2 = X1.copy()
     y2 = df["RecEnc"]
 
@@ -79,7 +79,7 @@ def show_sleep_app():
     model_rec = RandomForestClassifier(n_estimators=200, random_state=42)
     model_rec.fit(X2_train, y2_train)
 
-    # ========================= 3. Sleep Score Model (Regression) =========================
+    # 3. Sleep Score Model (Regression)
     score_map = {"Poor": 30, "Average": 60, "Excellent": 90}
     df["SleepScore"] = df["SleepQuality"].map(score_map)
 
@@ -90,7 +90,7 @@ def show_sleep_app():
     model_score = RandomForestRegressor(n_estimators=200, random_state=42)
     model_score.fit(X3_train, y3_train)
 
-    # ========================= USER INPUTS =========================
+    # USER INPUTS 
     age = st.number_input("Age", 5, 100, 25)
     meditation = st.selectbox("Do you meditate daily?", ["Yes", "No"])
     consistency = st.selectbox("Do you maintain a consistent sleep schedule?", ["Yes", "No"])
@@ -120,7 +120,7 @@ def show_sleep_app():
 
     input_features = np.array([[age, med_val, con_val, sleep_duration, stress, dis_val]])
 
-    # ========================= PREDICTION =========================
+    # PREDICTION 
     if st.button("✨ Analyze My Sleep"):
 
         st.markdown("---")
